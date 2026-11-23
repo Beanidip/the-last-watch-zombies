@@ -30,7 +30,7 @@ jobs:
         run: python3 scripts/validate-assets.py
 
   build-test:
-    name: Build + regression tests (VS ${{ env.VS_VERSION }})
+    name: Build + regression tests (VS 1.22.7)
     runs-on: ubuntu-24.04
     needs: static
     steps:
