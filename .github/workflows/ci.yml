@@ -1,0 +1,82 @@
+name: CI
+
+# Reproducible checks only. Nothing here publishes a release or uploads the
+# compiled mod: distribution requires the author's explicit authorization.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  VS_VERSION: "1.22.7"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_NOLOGO: "1"
+
+jobs:
+  static:
+    name: Static asset checks
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate JSON assets and version metadata
+        run: python3 scripts/validate-assets.py
+
+  build-test:
+    name: Build + regression tests (VS ${{ env.VS_VERSION }})
+    runs-on: ubuntu-24.04
+    needs: static
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      # The official server archive is fetched from the Vintage Story CDN and
+      # SHA-256 verified. It is used only as compile-time references and is
+      # never committed, cached into the repo, or included in any artifact.
+      - name: Cache Vintage Story reference assemblies
+        id: vs-cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/vs-server
+          key: vs-server-${{ env.VS_VERSION }}-linux-x64-v1
+
+      - name: Fetch Vintage Story ${{ env.VS_VERSION }} server
+        if: steps.vs-cache.outputs.cache-hit != 'true'
+        run: bash scripts/fetch-vs-server.sh "$VS_VERSION" "$RUNNER_TEMP/vs-server"
+
+      - name: Build mod (Release)
+        run: >
+          dotnet build TheLastWatchZombies.csproj -c Release -m:1 -t:Rebuild
+          "-p:VintageStoryPath=$RUNNER_TEMP/vs-server"
+          | tee build.log
+
+      - name: Check for compiler warnings
+        run: |
+          grep -E '^\s*[0-9]+ Warning\(s\)' build.log || true
+          if grep -E 'warning (CS|MSB|NU)[0-9]+' build.log; then
+            echo "::warning::Compiler warnings present (baseline v2.0.9 had 0)."
+          fi
+
+      - name: Verify package contains no game assemblies
+        run: |
+          zip=$(ls dist/thelastwatchzombies_*.zip)
+          unzip -l "$zip"
+          if unzip -l "$zip" | grep -E -i '(Vintagestory(API|Lib)|VSEssentials|VSSurvivalMod|0Harmony|Newtonsoft)\.dll'; then
+            echo "::error::Proprietary or framework assemblies found in the mod package"; exit 1
+          fi
+
+      - name: Regression tests
+        run: dotnet run --project tests/Regression.csproj -c Release "-p:VintageStoryPath=$RUNNER_TEMP/vs-server"
+
+      - name: Configuration defaults report (informational)
+        run: dotnet run --project tools/ConfigDump -c Release "-p:VintageStoryPath=$RUNNER_TEMP/vs-server" -- config-dump .

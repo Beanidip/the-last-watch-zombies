@@ -1,0 +1,48 @@
+# Build output
+bin/
+obj/
+dist/
+tests/bin/
+tests/obj/
+tools/**/bin/
+tools/**/obj/
+*.dll
+*.pdb
+*.exe
+
+# Proprietary Vintage Story assemblies / local game or server installs (never commit)
+/vs/
+/vs-server/
+/.vintagestory/
+VintagestoryAPI.*
+VintagestoryLib.*
+VSEssentials.*
+VSSurvivalMod.*
+VSCreativeMod.*
+
+# Local test servers, worlds and generated configs
+/srvdata/
+/testserver/
+*.vcdbs
+*.vcdbs-journal
+ModConfig/
+
+# Generated reports
+/artifacts/
+/config-dump/
+
+# IDE / OS
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.swp
+.DS_Store
+Thumbs.db
+
+# Local secrets
+.env
+.env.*
+*.pfx
+*.snk
