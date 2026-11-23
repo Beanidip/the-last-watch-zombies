@@ -1,0 +1,8 @@
+{
+  "item-creature-zombie": "Zombie",
+  "entity-zombie": "Zombie",
+  "death-eaten": "{0} was eaten.",
+  "death-turned": "{0} was turned.",
+  "entity-alphazombie": "Alpha Zombie",
+  "item-creature-alphazombie": "Alpha Zombie"
+}

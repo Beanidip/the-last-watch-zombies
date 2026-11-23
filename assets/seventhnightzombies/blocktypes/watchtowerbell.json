@@ -1,0 +1,63 @@
+{
+  "code": "watchtowerbell",
+  "class": "Block",
+  "drawtype": "json",
+  "blockmaterial": "Metal",
+  "creativeinventory": {
+    "general": [
+      "*"
+    ]
+  },
+  "textures": {
+    "bell": {
+      "base": "game:entity/lore/bell/bell"
+    }
+  },
+  "resistance": 2.0,
+  "lightAbsorption": 0,
+  "sounds": {
+    "place": "game:block/stone",
+    "break": "game:block/stone"
+  },
+  "attributes": {
+    "reinforcable": true
+  },
+  "shape": {
+    "base": "seventhnightzombies:block/watchtowerbell"
+  },
+  "sideopaque": {
+    "all": false
+  },
+  "sidesolid": {
+    "all": false
+  },
+  "collisionbox": {
+    "x1": 0.0625,
+    "y1": 0.03125,
+    "z1": 0.24746,
+    "x2": 0.9375,
+    "y2": 0.89114,
+    "z2": 0.75254
+  },
+  "selectionbox": {
+    "x1": 0.0625,
+    "y1": 0.03125,
+    "z1": 0.24746,
+    "x2": 0.9375,
+    "y2": 0.89114,
+    "z2": 0.75254
+  },
+  "guiTransform": {
+    "rotation": {
+      "x": -20,
+      "y": 35,
+      "z": 0
+    },
+    "origin": {
+      "x": 0.5,
+      "y": 0.5,
+      "z": 0.5
+    },
+    "scale": 1.2
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "code": "rotconcentrate",
+  "class": "Item",
+  "maxstacksize": 16,
+  "creativeinventory": {
+    "general": [
+      "*"
+    ]
+  },
+  "attributes": {
+    "handbook": {
+      "groupBy": "recipe"
+    }
+  },
+  "shape": {
+    "base": "game:item/rot"
+  },
+  "textures": {
+    "rot": {
+      "base": "seventhnightzombies:item/rotconcentrate"
+    },
+    "base": {
+      "base": "seventhnightzombies:item/rotconcentrate"
+    }
+  },
+  "behaviors": [
+    {
+      "name": "GroundStorable",
+      "properties": {
+        "layout": "Messy12",
+        "collisionBox": {
+          "x1": 0,
+          "y1": 0,
+          "z1": 0,
+          "x2": 1,
+          "y2": 0.125,
+          "z2": 1
+        }
+      }
+    }
+  ],
+  "guiTransform": {
+    "translation": {
+      "x": 4,
+      "y": 0,
+      "z": 0
+    },
+    "rotation": {
+      "x": 142,
+      "y": 36,
+      "z": 0
+    },
+    "origin": {
+      "x": 0.45,
+      "y": 0.09,
+      "z": 0.5
+    },
+    "scale": 2.8
+  },
+  "groundTransform": {
+    "translation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rotation": {
+      "x": 4,
+      "y": 0,
+      "z": 0
+    },
+    "origin": {
+      "x": 0.5,
+      "y": 0,
+      "z": 0.5
+    },
+    "scale": 3.64
+  }
+}

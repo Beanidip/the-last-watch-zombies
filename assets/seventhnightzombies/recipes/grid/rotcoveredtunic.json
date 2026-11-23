@@ -1,0 +1,21 @@
+{
+  "ingredientPattern": "RRR,RGR,RRR",
+  "width": 3,
+  "height": 3,
+  "ingredients": {
+    "R": {
+      "type": "item",
+      "code": "game:rot",
+      "quantity": 2
+    },
+    "G": {
+      "type": "item",
+      "code": "game:clothes-upperbody-grass"
+    }
+  },
+  "output": {
+    "type": "item",
+    "code": "seventhnightzombies:rotcoveredtunic",
+    "quantity": 1
+  }
+}

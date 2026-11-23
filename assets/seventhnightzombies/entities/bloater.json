@@ -1,0 +1,112 @@
+{
+  "code": "bloater",
+  "class": "SeventhNightZombie",
+  "tags": [
+    "habitat-land"
+  ],
+  "weight": 130,
+  "canClimb": true,
+  "deadHitboxSize": {
+    "x": 1.7,
+    "y": 0.4
+  },
+  "eyeHeight": 1.65,
+  "attributes": {
+    "knockbackResistance": 0.3,
+    "isMechanical": true,
+    "deathByMultiplier": 1.0
+  },
+  "drops": [],
+  "client": {
+    "renderer": "Shape",
+    "shape": {
+      "base": "seventhnightzombies:entity/bloater"
+    },
+    "textures": {
+      "afflicted4": {
+        "base": "seventhnightzombies:entity/afflicted4"
+      }
+    },
+    "behaviors": [
+      {
+        "code": "repulseagents"
+      },
+      {
+        "code": "controlledphysics",
+        "stepHeight": 1.05,
+        "climbUpSpeed": 0.028,
+        "climbDownSpeed": 0.02
+      },
+      {
+        "code": "interpolateposition"
+      }
+    ],
+    "animations": [
+      {
+        "code": "idle",
+        "animation": "idle",
+        "blendMode": "Average",
+        "triggeredBy": {
+          "defaultAnim": true
+        }
+      },
+      {
+        "code": "walk",
+        "animation": "walk",
+        "animationSpeed": 0.65,
+        "blendMode": "Average",
+        "weight": 5
+      },
+      {
+        "code": "attack",
+        "animation": "attack",
+        "blendMode": "Add",
+        "weight": 8
+      },
+      {
+        "code": "die",
+        "animation": "die",
+        "blendMode": "Average",
+        "weight": 10,
+        "triggeredBy": {
+          "onControls": [
+            "dead"
+          ]
+        }
+      }
+    ]
+  },
+  "server": {
+    "behaviors": [
+      {
+        "code": "repulseagents"
+      },
+      {
+        "code": "controlledphysics",
+        "stepHeight": 1.05,
+        "climbUpSpeed": 0.028,
+        "climbDownSpeed": 0.02
+      },
+      {
+        "code": "health",
+        "currenthealth": 40,
+        "maxhealth": 40
+      },
+      {
+        "code": "deaddecay",
+        "hoursToDecay": 10000
+      }
+    ],
+    "attributes": {}
+  },
+  "collisionBoxSize": {
+    "x": 0.95,
+    "y": 1.85
+  },
+  "selectionBoxSize": {
+    "x": 1.5,
+    "y": 2.4
+  },
+  "canClimbAnywhere": false,
+  "climbTouchDistance": 0.65
+}

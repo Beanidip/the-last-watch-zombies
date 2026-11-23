@@ -1,0 +1,100 @@
+{
+  "code": "creature",
+  "class": "ItemCreature",
+  "maxstacksize": 64,
+  "variantgroups": [
+    {
+      "code": "type",
+      "states": [
+        "zombie",
+        "alphazombie",
+        "grabber",
+        "hivezombie",
+        "screamer",
+        "bloater"
+      ]
+    }
+  ],
+  "shapeByType": {
+    "*-zombie": {
+      "base": "seventhnightzombies:entity/zombie"
+    },
+    "*-alphazombie": {
+      "base": "seventhnightzombies:entity/zombie"
+    },
+    "*-grabber": {
+      "base": "seventhnightzombies:entity/grabber"
+    },
+    "*-hivezombie": {
+      "base": "seventhnightzombies:entity/hivezombie"
+    },
+    "*-screamer": {
+      "base": "seventhnightzombies:entity/screamer"
+    },
+    "*-bloater": {
+      "base": "seventhnightzombies:entity/bloater"
+    }
+  },
+  "texturesByType": {
+    "*-zombie": {
+      "skin": {
+        "base": "seventhnightzombies:entity/skin"
+      },
+      "shirt": {
+        "base": "seventhnightzombies:entity/shirt"
+      },
+      "pants": {
+        "base": "seventhnightzombies:entity/pants"
+      },
+      "face": {
+        "base": "seventhnightzombies:entity/face"
+      }
+    },
+    "*-alphazombie": {
+      "skin": {
+        "base": "seventhnightzombies:entity/alphaskin"
+      },
+      "shirt": {
+        "base": "seventhnightzombies:entity/alphashirt"
+      },
+      "pants": {
+        "base": "seventhnightzombies:entity/alphapants"
+      },
+      "face": {
+        "base": "seventhnightzombies:entity/alphaface"
+      }
+    },
+    "*-grabber": {
+      "afflicted4": {
+        "base": "seventhnightzombies:entity/afflicted4"
+      }
+    },
+    "*-hivezombie": {
+      "afflicted4": {
+        "base": "seventhnightzombies:entity/afflicted4"
+      },
+      "hive": {
+        "base": "game:block/reed/beehive/wild"
+      }
+    },
+    "*-screamer": {
+      "afflicted4": {
+        "base": "seventhnightzombies:entity/afflicted4"
+      }
+    },
+    "*-bloater": {
+      "afflicted4": {
+        "base": "seventhnightzombies:entity/afflicted4"
+      }
+    }
+  },
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "creatures": [
+      "*"
+    ]
+  },
+  "materialDensity": 600
+}

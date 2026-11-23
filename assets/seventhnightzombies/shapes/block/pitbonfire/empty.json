@@ -1,0 +1,577 @@
+{
+  "textureWidth": 16,
+  "textureHeight": 16,
+  "textures": {
+    "ash": "seventhnightzombies:block/pitbonfire/ash",
+    "char": "seventhnightzombies:block/pitbonfire/char",
+    "woodside": "seventhnightzombies:block/pitbonfire/woodside",
+    "woodend": "seventhnightzombies:block/pitbonfire/woodend",
+    "embers": "seventhnightzombies:block/pitbonfire/embers"
+  },
+  "elements": [
+    {
+      "name": "ash-ring-n",
+      "from": [
+        2,
+        0.4,
+        2
+      ],
+      "to": [
+        14,
+        1.4,
+        4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "name": "ash-ring-s",
+      "from": [
+        2,
+        0.4,
+        12
+      ],
+      "to": [
+        14,
+        1.4,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "name": "ash-ring-w",
+      "from": [
+        2,
+        0.4,
+        4
+      ],
+      "to": [
+        4,
+        1.4,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "name": "ash-ring-e",
+      "from": [
+        12,
+        0.4,
+        4
+      ],
+      "to": [
+        14,
+        1.4,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "name": "ash-heart",
+      "from": [
+        4,
+        0.5,
+        4
+      ],
+      "to": [
+        12,
+        1.25,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#ash",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "name": "burnt-stick-one",
+      "from": [
+        2.5,
+        1.5,
+        7.5
+      ],
+      "to": [
+        13.5,
+        2.6,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#char",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#char",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#char",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#char",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#char",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#char",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      },
+      "rotationOrigin": [
+        8,
+        3,
+        8
+      ],
+      "rotationY": -24
+    },
+    {
+      "name": "burnt-stick-two",
+      "from": [
+        3.5,
+        2.1,
+        7.1
+      ],
+      "to": [
+        12.5,
+        3.25,
+        8.6
+      ],
+      "faces": {
+        "north": {
+          "texture": "#char",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#char",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#char",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#char",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#char",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#char",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      },
+      "rotationOrigin": [
+        8,
+        3,
+        8
+      ],
+      "rotationY": 36
+    },
+    {
+      "name": "ember-pocket",
+      "from": [
+        6,
+        1.26,
+        5.5
+      ],
+      "to": [
+        10,
+        1.42,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#embers",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#embers",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#embers",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#embers",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#embers",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#embers",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}

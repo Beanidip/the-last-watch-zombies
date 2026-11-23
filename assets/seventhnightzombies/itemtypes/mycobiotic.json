@@ -1,0 +1,18 @@
+{
+  "code": "mycobiotic",
+  "class": "Item",
+  "maxstacksize": 16,
+  "creativeinventory": {
+    "general": [
+      "*"
+    ]
+  },
+  "texture": {
+    "base": "seventhnightzombies:item/mycobiotic"
+  },
+  "attributes": {
+    "handbook": {
+      "groupBy": "recipe"
+    }
+  }
+}

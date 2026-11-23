@@ -1,0 +1,16 @@
+{
+  "ingredientPattern": "III,II_",
+  "width": 3,
+  "height": 2,
+  "ingredients": {
+    "I": {
+      "type": "item",
+      "code": "game:ingot-copper"
+    }
+  },
+  "output": {
+    "type": "block",
+    "code": "seventhnightzombies:stronghold",
+    "quantity": 1
+  }
+}

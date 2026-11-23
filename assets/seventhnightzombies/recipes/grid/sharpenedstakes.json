@@ -1,0 +1,32 @@
+{
+  "ingredientPattern": "SKS,FRF",
+  "width": 3,
+  "height": 2,
+  "ingredients": {
+    "S": {
+      "type": "item",
+      "code": "game:stick"
+    },
+    "K": {
+      "type": "item",
+      "isTool": true,
+      "toolDurabilityCost": 5,
+      "tags": [
+        "tool-knife"
+      ]
+    },
+    "F": {
+      "type": "item",
+      "code": "game:firewood"
+    },
+    "R": {
+      "type": "item",
+      "code": "game:rope"
+    }
+  },
+  "output": {
+    "type": "block",
+    "code": "game:palisadestakes-west",
+    "quantity": 1
+  }
+}

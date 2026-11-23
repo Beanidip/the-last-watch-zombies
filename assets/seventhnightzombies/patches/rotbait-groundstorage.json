@@ -1,0 +1,10 @@
+[
+  {
+    "op": "add",
+    "path": "/entityBehaviors/-",
+    "value": {
+      "name": "LastWatchRotBait"
+    },
+    "file": "game:blocktypes/groundstorage.json"
+  }
+]

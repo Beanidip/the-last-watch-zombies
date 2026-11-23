@@ -1,0 +1,67 @@
+{
+  "code": "pitbonfireloaded",
+  "class": "SeventhNightPitBonfire",
+  "entityClass": "SeventhNightPitBonfireBE",
+  "drawtype": "json",
+  "blockmaterial": "Wood",
+  "creativeinventory": {},
+  "textures": {
+    "ash": {
+      "base": "seventhnightzombies:block/pitbonfire/ash"
+    },
+    "char": {
+      "base": "seventhnightzombies:block/pitbonfire/char"
+    },
+    "woodside": {
+      "base": "seventhnightzombies:block/pitbonfire/woodside"
+    },
+    "woodend": {
+      "base": "seventhnightzombies:block/pitbonfire/woodend"
+    },
+    "embers": {
+      "base": "seventhnightzombies:block/pitbonfire/embers"
+    }
+  },
+  "resistance": 1.2,
+  "lightAbsorption": 0,
+  "sounds": {
+    "place": "game:block/wood",
+    "break": "game:block/wood"
+  },
+  "attributes": {
+    "reinforcable": false
+  },
+  "shape": {
+    "base": "seventhnightzombies:block/pitbonfire/loaded"
+  },
+  "collisionBox": {
+    "x1": 0.1,
+    "y1": 0,
+    "z1": 0.1,
+    "x2": 0.9,
+    "y2": 0.51,
+    "z2": 0.9
+  },
+  "selectionBox": {
+    "x1": 0,
+    "y1": 0,
+    "z1": 0,
+    "x2": 1,
+    "y2": 0.65,
+    "z2": 1
+  },
+  "shapeInventory": {
+    "base": "seventhnightzombies:block/pitbonfire/loaded"
+  },
+  "renderpass": "opaque",
+  "sideopaque": {
+    "all": false
+  },
+  "sidesolid": {
+    "all": false
+  },
+  "sideao": {
+    "all": false
+  },
+  "faceCullMode": "NeverCull"
+}

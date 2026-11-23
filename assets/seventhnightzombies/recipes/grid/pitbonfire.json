@@ -1,0 +1,20 @@
+{
+  "ingredientPattern": "RRR,_C_",
+  "width": 3,
+  "height": 2,
+  "ingredients": {
+    "R": {
+      "type": "item",
+      "code": "game:resin"
+    },
+    "C": {
+      "type": "item",
+      "code": "game:cattailtops"
+    }
+  },
+  "output": {
+    "type": "block",
+    "code": "seventhnightzombies:pitbonfire",
+    "quantity": 1
+  }
+}

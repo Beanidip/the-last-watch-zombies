@@ -1,0 +1,31 @@
+{
+  "code": "rotcoveredtunic",
+  "class": "Item",
+  "maxstacksize": 1,
+  "durability": 20,
+  "storageFlags": 128,
+  "creativeinventory": {
+    "general": [
+      "*"
+    ]
+  },
+  "attributes": {
+    "clothescategory": "upperbody",
+    "wearableAttachment": true,
+    "warmth": 0,
+    "statModifiers": {
+      "walkSpeed": -0.3
+    },
+    "handbook": {
+      "groupBy": "recipe"
+    }
+  },
+  "behaviors": [
+    {
+      "name": "Wearable"
+    }
+  ],
+  "texture": {
+    "base": "seventhnightzombies:item/rotcoveredtunic-reference"
+  }
+}

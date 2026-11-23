@@ -1,0 +1,28 @@
+{
+  "ingredientPattern": "SRS,SAS,SRS",
+  "width": 3,
+  "height": 3,
+  "ingredients": {
+    "S": {
+      "type": "item",
+      "code": "game:stick"
+    },
+    "R": {
+      "type": "item",
+      "code": "game:rope"
+    },
+    "A": {
+      "type": "item",
+      "isTool": true,
+      "toolDurabilityCost": 1,
+      "tags": [
+        "tool-axe"
+      ]
+    }
+  },
+  "output": {
+    "type": "block",
+    "code": "seventhnightzombies:strongholdwood",
+    "quantity": 1
+  }
+}

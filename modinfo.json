@@ -1,0 +1,17 @@
+{
+  "type": "code",
+  "modid": "seventhnightzombies",
+  "name": "The Last Watch Zombies",
+  "authors": [
+    "Beani"
+  ],
+  "description": "Unified zombie survival with zone spawning, dormant populations, migration, settlements, infection, and seventh-night hordes.",
+  "version": "2.0.9",
+  "side": "Universal",
+  "requiredOnClient": true,
+  "requiredOnServer": true,
+  "dependencies": {
+    "game": "1.22.7",
+    "survival": ""
+  }
+}

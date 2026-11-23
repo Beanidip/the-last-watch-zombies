@@ -1,0 +1,18 @@
+{
+  "code": "mycobioticcure",
+  "class": "SeventhNightInfectionCure",
+  "maxstacksize": 16,
+  "creativeinventory": {
+    "general": [
+      "*"
+    ]
+  },
+  "texture": {
+    "base": "seventhnightzombies:item/mycobioticcure"
+  },
+  "attributes": {
+    "handbook": {
+      "groupBy": "recipe"
+    }
+  }
+}

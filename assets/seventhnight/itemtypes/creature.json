@@ -1,0 +1,53 @@
+{
+  "code": "creature",
+  "class": "ItemCreature",
+  "maxstacksize": 64,
+  "variantgroups": [
+    {
+      "code": "type",
+      "states": [
+        "zombie",
+        "alphazombie"
+      ]
+    }
+  ],
+  "shapeByType": {
+    "*-zombie": {
+      "base": "seventhnightzombies:entity/zombie"
+    },
+    "*-alphazombie": {
+      "base": "seventhnightzombies:entity/zombie"
+    }
+  },
+  "texturesByType": {
+    "*-zombie": {
+      "skin": {
+        "base": "seventhnightzombies:entity/skin"
+      },
+      "shirt": {
+        "base": "seventhnightzombies:entity/shirt"
+      },
+      "pants": {
+        "base": "seventhnightzombies:entity/pants"
+      },
+      "face": {
+        "base": "seventhnightzombies:entity/face"
+      }
+    },
+    "*-alphazombie": {
+      "skin": {
+        "base": "seventhnightzombies:entity/alphaskin"
+      },
+      "shirt": {
+        "base": "seventhnightzombies:entity/alphashirt"
+      },
+      "pants": {
+        "base": "seventhnightzombies:entity/alphapants"
+      },
+      "face": {
+        "base": "seventhnightzombies:entity/alphaface"
+      }
+    }
+  },
+  "materialDensity": 600
+}
