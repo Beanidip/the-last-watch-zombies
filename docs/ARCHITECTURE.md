@@ -43,7 +43,7 @@ Non-ModSystem services owned by `SeventhNightSystem`:
 | `ZombiePopulation : IZombiePopulation` | `src/ZombiePopulation.cs` | Dormant pool (per-chunk counts), zone index, corpse registry, dormancy on despawn, reactivation, migration transaction |
 | `Config` / `Rules` | `src/Config.cs` | All settings, validation/clamping, pure rule helpers (night, horde calendar, infection, light, target patterns) |
 | `StandaloneConfigStorage` | `src/StandaloneConfigStorage.cs` | Splits `Config` into main/advanced ModConfig JSON; retired keys |
-| `AdminConfiguration` | `src/AdminConfiguration.cs` | `/zombieconfig`, `/zombiediagnostics` (edit saved config; restart to apply) |
+| `AdminConfiguration` | `src/AdminConfiguration.cs` | `/zombieconfig`, `/zombiediagnostics` (validate, save, and apply live via `ApplyLive`) |
 | `WorkBudget`, `WorkProfiler` | `src/WorkBudget.cs` | Shared per-second budgets for AI scans/routes; optional timing counters |
 | `SpawnRetryBackoff` | `src/SpawnRetryBackoff.cs` | Per-zone 15/30/60 s backoff after repeated placement failures |
 | `ZombieMaskService` | `src/ZombieMaskService.cs` | Funeral-mask camouflage + durability drain |
@@ -162,7 +162,7 @@ pending death Alphas, hit queues for infection.
 `…configadvanced.json`. Load = defaults ← advanced ← main (JSON populate), then
 `Validate()` clamps every field. The server **rewrites both files at every start**
 with all non-retired fields, so unknown/retired keys are dropped and values are
-normalized. `/zombieconfig` edits the saved file only (restart required). The
+normalized. `/zombieconfig` saves to the file and applies the value to the running `Settings` immediately (2.0.10). The
 client loads its own local copy only to set funeral-mask durability for display.
 See `CONFIGURATION.md`.
 

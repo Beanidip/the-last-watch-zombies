@@ -20,6 +20,38 @@ public static class StabilityRegression
         BuildingRecords(check);
         IndustryScan(check);
         TraitText(check);
+        LiveConfig(check);
+    }
+
+    static void LiveConfig(Action<bool, string> check)
+    {
+        var saved = new Dictionary<string, JObject>();
+        var api = Fake.Make<ICoreServerAPI>((m, a) =>
+        {
+            if (m.Name == "StoreModConfig") { saved[(string)a[1]] = (JObject)a[0]; return null; }
+            if (m.Name == "LoadModConfig") return saved.TryGetValue((string)a[0], out var v) ? v : null;
+            return null;
+        });
+        var core = new SeventhNightSystem();
+        bool Ok(TextCommandResult r) => r.Status == EnumCommandStatus.Success;
+        check(Ok(AdminConfiguration.Execute(api, core, "activecap 100")) && core.Settings.MaxActiveZombies == 100 &&
+              (int)saved[StandaloneConfigStorage.MainFile]["MaxActiveZombies"] == 100, "/zombieconfig applies immediately and saves");
+        check(Ok(AdminConfiguration.Execute(api, core, "spawnmindistance 60")) && core.Settings.SpawnMinDistance == 60 &&
+              core.Settings.SpawnMaxDistance >= 61 && (int)saved[StandaloneConfigStorage.MainFile]["SpawnMaxDistance"] == core.Settings.SpawnMaxDistance,
+              "dependent settings stay consistent live and on disk");
+        check(!Ok(AdminConfiguration.Execute(api, core, "activecap -5")) && core.Settings.MaxActiveZombies == 100,
+              "rejected value changes nothing");
+        check(Ok(AdminConfiguration.Execute(api, core, "protectclaims off")) && !core.Settings.ProtectClaims &&
+              Ok(AdminConfiguration.Execute(api, core, "curedoses 4")) && core.Settings.CureDosesRequired == 4 &&
+              Ok(AdminConfiguration.Execute(api, core, "deathalpha false")) && !core.Settings.SpawnAlphaOnPlayerDeath,
+              "new short names work live");
+        check(!core.Profiler.Enabled && Ok(AdminConfiguration.Execute(api, core, "diagnostics on")) && core.Profiler.Enabled,
+              "diagnostics toggle without restart");
+        check(AdminConfiguration.Keys.All(k => typeof(Config).GetField(k.Value) != null && !StandaloneConfigStorage.IsRetired(k.Value)),
+              "every /zombieconfig name maps to an active setting");
+        foreach (var name in new[] { "protectclaims", "normalhits", "alphahits", "curedoses", "doseinterval", "attackdamage",
+                     "detectionrange", "hordeblockbreakchance", "deathalpha" })
+            check(AdminConfiguration.Keys.ContainsKey(name), "short name exists: " + name);
     }
 
     static void TraitText(Action<bool, string> check)

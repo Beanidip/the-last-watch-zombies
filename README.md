@@ -59,8 +59,10 @@ inventory.
    `thelastwatchzombies_*.zip` from `Mods`.
 3. Put `thelastwatchzombies_2.0.10.zip` in `Mods` on the server **and** on every client.
 4. Start the server. It writes
-   `ModConfig/thelastwatchzombiesconfigmain.json` and `…configadvanced.json`
-   (see [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md)).
+   `ModConfig/thelastwatchzombiesconfigmain.json` and `…configadvanced.json`.
+   `QUICKSTART.md` (also inside the mod ZIP) lists the commands and the most
+   useful settings; admins change them live with `/zombieconfig <name> <value>`.
+   Every setting: [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md).
 
 This repository contains **source only**. There is no published release; you
 build the ZIP yourself (below).
@@ -93,7 +95,7 @@ Output: `dist/thelastwatchzombies_2.0.10.zip`. Details are in
 | `src/` | All C# (26 files; namespace `SeventhNightZombies`) |
 | `assets/seventhnightzombies/` | Entities, shapes, textures, sounds, recipes, lang, ground-storage patch |
 | `assets/seventhnight/` | Legacy entity and item codes for pre-merge worlds |
-| `tests/` | Regression console program (1,875 assertions) |
+| `tests/` | Regression console program (1,903 assertions) |
 | `tools/ConfigDump/` | Regenerates configuration defaults from source |
 | `scripts/` | VS reference fetcher, asset validator, config generators (`refresh-config-files.sh`) |
 | `validation/` | Author's historical build, test and server logs, and the throwaway QA mod source |
@@ -118,7 +120,7 @@ Output: `dist/thelastwatchzombies_2.0.10.zip`. Details are in
 
 ## Status
 
-The source compiles cleanly against 1.22.7 and all 1,875 regression assertions
+The source compiles cleanly against 1.22.7 and all 1,903 regression assertions
 pass locally. A live multiplayer acceptance test has **not**
 been performed yet; see [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md) before
 running a public event.

@@ -10,7 +10,7 @@ Defaults below are produced from `src/Config.cs` (after `Validate()`). The shipp
 * `VintagestoryData/ModConfig/thelastwatchzombiesconfigadvanced.json` — budgets, tuning, markers (`advanced`).
 * Load order: built-in defaults ← advanced ← main, then `Config.Validate()` clamps every value into its allowed range (out-of-range values are silently corrected).
 * **The server rewrites both files on every start** with every non-retired key, so values persist but unknown or retired keys are removed. Back up custom files before upgrading.
-* `/zombieconfig <key> [value]` edits the saved file (validated, case-insensitive keys) — **restart required**. The 51 short command names are listed in `COMMANDS.md`.
+* `/zombieconfig <name> [value]` validates the value, saves it to the owning file **and applies it to the running server immediately** (dependent settings are re-validated together). The 60 short names are listed in `COMMANDS.md` and the most useful ones in `QUICKSTART.md`. Hand edits to the JSON files still need a restart.
 * Pre-merge files (`seventhnightconfig*.json`, `thelastwatchconfig*.json`) are not read.
 * Clients read their own local copy only for funeral-mask durability display.
 
@@ -181,7 +181,7 @@ bash scripts/refresh-config-files.sh vs-server
 | `PursuitSteerIntervalSeconds` | advanced | `0.55` | A | Interval between direct-steer updates in open terrain. |
 | `PursuitDirectWalkRangeBlocks` | advanced | `10.0` | A | Max distance for direct steering instead of A*. |
 | `PursuitRepathTargetMovementBlocks` | advanced | `1.5` | A | Prey movement that triggers a new route. |
-| `PerformanceDiagnostics` | advanced | `false` | A | Enable WorkProfiler counters for /zombieperf (restart). |
+| `PerformanceDiagnostics` | advanced | `false` | A | Enable WorkProfiler counters for /zombieperf (toggle live with /zombiediagnostics). |
 
 ## Siege, claims and reinforcement
 

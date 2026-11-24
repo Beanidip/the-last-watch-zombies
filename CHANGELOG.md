@@ -22,6 +22,17 @@ Gameplay
   acquired the trait: Zombie infection. See Character > Traits."); the
   per-bite "Zombie wound: n/4" counter messages were removed. Lang key
   `infected-acquired` (English fallback built in).
+- `/zombieconfig` changes now apply to the running server immediately (still
+  saved to the config file); dependent settings are re-validated together.
+  `/zombiediagnostics` toggles the profiler live. Hand edits to the JSON files
+  still need a restart.
+- New `/zombieconfig` names: `protectclaims`, `normalhits`, `alphahits`,
+  `curedoses`, `doseinterval`, `attackdamage`, `detectionrange`,
+  `hordeblockbreakchance`, `deathalpha` (60 in total).
+- New `QUICKSTART.md`, shipped in the mod ZIP: first start, how to change
+  settings, the most useful settings with defaults and short names, all
+  commands. Generated from source by `scripts/refresh-config-files.sh`
+  (CI-checked).
 - Mycobiotic Cure can also be crafted with a horsetail poultice (reed or
   linen, `game:poultice-*-horsetail`) instead of a clean bandage.
 - Infection now appears in the character dialog's **Traits** tab ("Zombie
@@ -54,7 +65,7 @@ Cleanup (#10)
 - `DEFAULT-*.json`, `CONFIG-REFERENCE.md`, `docs/CONFIGURATION.md` regenerated
   from source by `scripts/refresh-config-files.sh`; CI fails on drift.
 - 60 new regression assertions (`tests/StabilityRegression.cs`,
-  `VariantRegression.RunStability`); 1888 total. `validate-assets.py` checks
+  `VariantRegression.RunStability`); 1903 total. `validate-assets.py` checks
   the cure recipe accepts both binders.
 
 Not verified in a running game or dedicated server.

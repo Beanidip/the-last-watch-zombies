@@ -7,8 +7,11 @@ using Vintagestory.API.Server;
 
 namespace SeventhNightZombies;
 
-// Persist edits without mutating live AI, profiler or population state halfway
-// through a tick. Multiple edits read the latest saved values before writing.
+// /zombieconfig: validate a value, save it to the owning ModConfig file AND
+// apply it to the running server immediately. Chat commands run on the server
+// main thread between ticks, and every exposed setting is read from Settings
+// at the moment it is used, so a live change is picked up on the next check.
+// Multiple edits read the latest saved values before writing.
 public static class AdminConfiguration
 {
     public static readonly Dictionary<string, string> Keys = new(StringComparer.OrdinalIgnoreCase)
@@ -63,18 +66,27 @@ public static class AdminConfiguration
         ["fatality"] = nameof(Config.InfectionFatalEnabled),
         ["fataldays"] = nameof(Config.InfectionFatalDays),
         ["curestartwindow"] = nameof(Config.CureStartWindowDays),
-        ["rustygears"] = nameof(Config.CorpseRustyGears)
+        ["rustygears"] = nameof(Config.CorpseRustyGears),
+        ["protectclaims"] = nameof(Config.ProtectClaims),
+        ["normalhits"] = nameof(Config.NormalHitsToInfect),
+        ["alphahits"] = nameof(Config.AlphaHitsToInfect),
+        ["curedoses"] = nameof(Config.CureDosesRequired),
+        ["doseinterval"] = nameof(Config.CureDoseIntervalDays),
+        ["attackdamage"] = nameof(Config.AttackDamage),
+        ["detectionrange"] = nameof(Config.DetectionRange),
+        ["hordeblockbreakchance"] = nameof(Config.HordeBlockBreakChance),
+        ["deathalpha"] = nameof(Config.SpawnAlphaOnPlayerDeath)
     };
 
     public static void Register(ICoreServerAPI api, SeventhNightSystem core)
     {
         api.ChatCommands.Create("zombieconfig")
-            .WithDescription("Admin: list settings, inspect a setting, or save a value for the next server restart")
+            .WithDescription("Admin: list settings, inspect a setting, or change one (saved and applied immediately)")
             .RequiresPrivilege("controlserver")
             .WithArgs(api.ChatCommands.Parsers.OptionalAll("setting and optional value"))
             .HandleWith(args => Execute(api, core, (args[0] as string) ?? ""));
         api.ChatCommands.Create("zombiediagnostics")
-            .WithDescription("Admin: save diagnostics on/off for the next server restart")
+            .WithDescription("Admin: turn performance diagnostics on/off (saved and applied immediately)")
             .RequiresPrivilege("controlserver")
             .WithArgs(api.ChatCommands.Parsers.OptionalAll("on or off"))
             .HandleWith(args => Execute(api, core, "diagnostics " + ((args[0] as string) ?? "").Trim()));
@@ -84,7 +96,7 @@ public static class AdminConfiguration
     {
         var words = input.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         if (words.Length == 0 || words[0].Equals("list", StringComparison.OrdinalIgnoreCase) || words[0] == "help")
-            return TextCommandResult.Success("/zombieconfig <setting> [value] — all changes require restart. Settings: " + string.Join(", ", Keys.Keys));
+            return TextCommandResult.Success("/zombieconfig <setting> [value] — changes are saved and take effect immediately. Settings: " + string.Join(", ", Keys.Keys));
         if (words.Length > 2 || !Keys.TryGetValue(words[0], out var name))
             return TextCommandResult.Error("Use /zombieconfig list or /zombieconfig <setting> [value].");
 
@@ -103,7 +115,7 @@ public static class AdminConfiguration
             var field = typeof(Config).GetField(name)!;
             var propertyName = field.GetCustomAttribute<JsonPropertyAttribute>()?.PropertyName ?? name;
             if (words.Length == 1)
-                return TextCommandResult.Success($"{words[0]} ({name}): running={field.GetValue(core.Settings)}, saved={field.GetValue(pending)}. Changes apply after restart.");
+                return TextCommandResult.Success($"{words[0]} ({name}): running={field.GetValue(core.Settings)}, saved={field.GetValue(pending)}.");
             if (!TrySet(pending, name, words[1], out var error)) return TextCommandResult.Error(error);
             // Preserve unrelated keys, including upgrade markers. Serialize the
             // validated config so dependent min/max pairs are saved together.
@@ -121,13 +133,26 @@ public static class AdminConfiguration
             }
             foreach (var old in saved.Properties().Where(p => StandaloneConfigStorage.IsRetired(p.Name)).ToArray()) old.Remove();
             api.StoreModConfig(saved, filename);
-            return TextCommandResult.Success($"Saved {words[0]}={field.GetValue(pending)} in {filename}. Restart the server to apply. Running value: {field.GetValue(core.Settings)}.");
+            ApplyLive(core, name, field.GetValue(pending));
+            return TextCommandResult.Success($"{words[0]} = {field.GetValue(core.Settings)} (saved in {filename}, active now).");
         }
         catch (Exception e)
         {
             api.Logger.Error("Zombie config command failed: {0}", e);
             return TextCommandResult.Error("Could not save configuration; see the server log. Running settings were unchanged.");
         }
+    }
+    // Apply one validated value to the running settings, then re-validate so
+    // dependent pairs (e.g. spawn min/max distance) stay consistent exactly as
+    // they were saved. Only the edited setting (and validation dependents)
+    // change; hand edits made to the file while running still need a restart.
+    public static void ApplyLive(SeventhNightSystem core, string fieldName, object value)
+    {
+        var field = typeof(Config).GetField(fieldName);
+        if (field == null || core?.Settings == null) return;
+        field.SetValue(core.Settings, value);
+        core.Settings.Validate();
+        core.Profiler.Enabled = core.Settings.PerformanceDiagnostics;
     }
     static string ResolveField(string jsonName) => typeof(Config).GetFields().FirstOrDefault(f =>
         (f.GetCustomAttribute<JsonPropertyAttribute>()?.PropertyName ?? f.Name) == jsonName)?.Name ?? jsonName;

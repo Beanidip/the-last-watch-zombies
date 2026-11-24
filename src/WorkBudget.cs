@@ -33,8 +33,8 @@ public sealed class WorkProfiler
         counters[name] = (c.Calls + 1, c.Total + ms, Math.Max(c.Max, ms), c.Items);
     }
     public string Report() => !Enabled
-        ? "Diagnostics disabled. Use /zombiediagnostics on, then restart the server."
-        : "Zombie work since load: " + string.Join("; ", counters.OrderBy(p => p.Key).Select(p =>
+        ? "Diagnostics disabled. Use /zombiediagnostics on, then check /zombieperf again later."
+        : "Zombie work since diagnostics were enabled: " + string.Join("; ", counters.OrderBy(p => p.Key).Select(p =>
             $"{p.Key}: calls={p.Value.Calls}, total={p.Value.Total:0.##}ms, max={p.Value.Max:0.##}ms, items={p.Value.Items}"));
     sealed class Sample : IDisposable
     {

@@ -250,7 +250,7 @@ public partial class SeventhNightSystem : ModSystem
         // It is not a force-spawn command; success increments the daily count.
         AdminConfiguration.Register(api, this);
         api.ChatCommands.Create("zombieperf")
-            .WithDescription("Admin: performance counters since world load; use /zombiediagnostics on, then restart")
+            .WithDescription("Admin: performance counters since diagnostics were enabled (/zombiediagnostics on)")
             .RequiresPrivilege("controlserver").HandleWith(_ => TextCommandResult.Success(Profiler.Report()));
         api.ChatCommands.Create("snambienttest")
             .WithDescription("Admin: attempt one real ambient zombie spawn near your survival character")

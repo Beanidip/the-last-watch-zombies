@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Regenerate every configuration artifact from src/Config.cs:
 #   DEFAULT-thelastwatchzombiesconfig{main,advanced}.json  (example configs)
-#   CONFIG-REFERENCE.md                                     (shipped in the mod ZIP)
+#   CONFIG-REFERENCE.md, QUICKSTART.md                      (shipped in the mod ZIP)
 #   docs/CONFIGURATION.md                                   (developer reference)
 # Usage: scripts/refresh-config-files.sh [VintageStoryPath]   (default ./vs-server)
 # With --check, regenerate into a temp dir and fail if anything differs.
@@ -17,8 +17,9 @@ mkdir -p "$OUT/gen/docs"
 cp "$OUT/dump/thelastwatchzombiesconfigmain.json" "$OUT/gen/DEFAULT-thelastwatchzombiesconfigmain.json"
 cp "$OUT/dump/thelastwatchzombiesconfigadvanced.json" "$OUT/gen/DEFAULT-thelastwatchzombiesconfigadvanced.json"
 python3 scripts/gen-config-doc.py "$OUT/dump" --reference > "$OUT/gen/CONFIG-REFERENCE.md"
+python3 scripts/gen-config-doc.py "$OUT/dump" --quickstart > "$OUT/gen/QUICKSTART.md"
 python3 scripts/gen-config-doc.py "$OUT/dump" > "$OUT/gen/docs/CONFIGURATION.md"
-FILES=(DEFAULT-thelastwatchzombiesconfigmain.json DEFAULT-thelastwatchzombiesconfigadvanced.json CONFIG-REFERENCE.md docs/CONFIGURATION.md)
+FILES=(DEFAULT-thelastwatchzombiesconfigmain.json DEFAULT-thelastwatchzombiesconfigadvanced.json CONFIG-REFERENCE.md QUICKSTART.md docs/CONFIGURATION.md)
 if [[ $CHECK == 1 ]]; then
   stale=0
   for f in "${FILES[@]}"; do

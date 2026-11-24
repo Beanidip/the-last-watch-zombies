@@ -20,7 +20,7 @@
     <ItemGroup><Assets Include="$(MSBuildProjectDirectory)/assets/**/*" /></ItemGroup>
     <Copy SourceFiles="@(Assets)" DestinationFiles="@(Assets->'$(Stage)/assets/%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="$(TargetPath);$(MSBuildProjectDirectory)/modinfo.json;$(MSBuildProjectDirectory)/modicon.png;$(MSBuildProjectDirectory)/LICENSE;$(MSBuildProjectDirectory)/README.md" DestinationFolder="$(Stage)" />
-    <Copy SourceFiles="$(MSBuildProjectDirectory)/UPDATE-NOTES.md;$(MSBuildProjectDirectory)/RELEASE-REVIEW.md;$(MSBuildProjectDirectory)/RELEASE-PLAYTEST.md;$(MSBuildProjectDirectory)/CONFIG-REFERENCE.md" DestinationFolder="$(Stage)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)/UPDATE-NOTES.md;$(MSBuildProjectDirectory)/RELEASE-REVIEW.md;$(MSBuildProjectDirectory)/RELEASE-PLAYTEST.md;$(MSBuildProjectDirectory)/CONFIG-REFERENCE.md;$(MSBuildProjectDirectory)/QUICKSTART.md" DestinationFolder="$(Stage)" />
     <ZipDirectory SourceDirectory="$(Stage)" DestinationFile="$(MSBuildProjectDirectory)/dist/thelastwatchzombies_$(Version).zip" Overwrite="true" />
   </Target>
 </Project>
