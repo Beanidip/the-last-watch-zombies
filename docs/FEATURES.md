@@ -79,7 +79,7 @@ Radius-based wake mode: **inert**.
 
 | Mechanic | Default | Status |
 |---|---|---|
-| Regular / Alpha hits to infect (within 60 s, damaging hits only) | 4 / 2 | Implemented (unit-tested) |
+| Regular / Alpha hits to infect (within 60 s, damaging hits only; counted silently, one chat line on infection) | 4 / 2 | Implemented (unit-tested) |
 | Poison 0.2 HP every 10 real s; 20 s once treatment starts | — | Implemented |
 | First dose must be taken within 2 in-game days of infection (later first doses refused, not consumed; window ignored if fatality is off) | `CureStartWindowDays=2` | Implemented 2.0.10 (unit + fixture tested) |
 | Fatal after 7 in-game days untreated; while treated, deadline extends to first dose + 6 days so a timely course always finishes | on | Implemented 2.0.10 (unit + fixture tested) |

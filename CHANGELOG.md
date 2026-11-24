@@ -18,6 +18,10 @@ Gameplay
   always completes. New player attribute `seventhnight-first-cure-dose-day`
   (estimated for saves from 2.0.9). `/zombieinfection` shows the start window.
   `/zombieconfig curestartwindow`. (#6)
+- Infection chat is reduced to one line when infection lands ("You have
+  acquired the trait: Zombie infection. See Character > Traits."); the
+  per-bite "Zombie wound: n/4" counter messages were removed. Lang key
+  `infected-acquired` (English fallback built in).
 - Mycobiotic Cure can also be crafted with a horsetail poultice (reed or
   linen, `game:poultice-*-horsetail`) instead of a clean bandage.
 - Infection now appears in the character dialog's **Traits** tab ("Zombie
@@ -50,7 +54,7 @@ Cleanup (#10)
 - `DEFAULT-*.json`, `CONFIG-REFERENCE.md`, `docs/CONFIGURATION.md` regenerated
   from source by `scripts/refresh-config-files.sh`; CI fails on drift.
 - 60 new regression assertions (`tests/StabilityRegression.cs`,
-  `VariantRegression.RunStability`); 1885 total. `validate-assets.py` checks
+  `VariantRegression.RunStability`); 1888 total. `validate-assets.py` checks
   the cure recipe accepts both binders.
 
 Not verified in a running game or dedicated server.

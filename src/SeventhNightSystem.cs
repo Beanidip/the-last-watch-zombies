@@ -469,9 +469,11 @@ public partial class SeventhNightSystem : ModSystem
             p.WatchedAttributes.RemoveAttribute(LegacyPoulticeKey);
             ClearHits(uid);
             SyncInfectionDisplay(p);
-            Tell(p, $"The wound burns. Take your first Mycobiotic Cure dose within {Settings.CureStartWindowDays:0.##} in-game day(s) or the infection can no longer be stopped; it is fatal after {Settings.InfectionFatalDays:0.##} in-game days. A full course is {Settings.CureDosesRequired} doses, one every {Settings.CureDoseIntervalDays:0.##} in-game day(s).");
+            // The only infection chat line; details live in Character > Traits.
+            Tell(p, Text("seventhnightzombies:infected-acquired",
+                "You have acquired the trait: Zombie infection. See Character > Traits."));
         }
-        else Tell(p, $"{(alpha ? "Alpha Zombie" : "Zombie")} wound: {recent.Count}/{required} hits within {Settings.HitWindowSeconds:0} seconds.");
+        // Bites before infection are counted silently.
     }
     // Called ONLY on the server by the cure item's right-click. Return true to
     // consume one item. Invalid/early uses do not consume supplies.
@@ -630,6 +632,17 @@ public partial class SeventhNightSystem : ModSystem
     {
         hits.Remove((uid, false));
         hits.Remove((uid, true));
+    }
+    // Localized text with an English fallback, so a missing or unloaded
+    // language can never interrupt gameplay code that sends a message.
+    static string Text(string key, string fallback)
+    {
+        try
+        {
+            string text = Lang.Get(key);
+            return string.IsNullOrEmpty(text) || text == key ? fallback : text;
+        }
+        catch { return fallback; }
     }
     void Tell(EntityPlayer p, string message) => (p.Player as IServerPlayer)?.SendMessage(0, message, EnumChatType.Notification);
     // The seventh night's ordinal is stable throughout the afternoon;

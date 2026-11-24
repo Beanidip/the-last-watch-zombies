@@ -4,6 +4,7 @@ Gameplay changes:
 
 - **Corpse loot:** zombies now drop **1 rusty gear** (`game:gear-rusty`) instead of a small raw hide. Rot, bones, the Alpha funeral-mask chance and Bloater rot are unchanged. A server that had customised `CorpseSmallHides` keeps that number as `CorpseRustyGears`.
 - **Mycobiotic Cure recipe:** Mycobiotic + a clean bandage **or** a horsetail poultice (reed or linen).
+- **Less chat spam:** bites no longer post a "Zombie wound: n/4" counter. Getting infected sends one message: *You have acquired the trait: Zombie infection*.
 - **Traits tab:** while infected, your character dialog's Traits tab shows "Zombie infection" with the time left to start the cure (or your dose progress and next dose) and the fatal countdown.
 - **Infection:** you have **2 in-game days** after infection to take the first Mycobiotic Cure dose (`CureStartWindowDays`). Start in time and the course can always be finished: while you keep dosing, death is postponed to *first dose + 6 days*. After the 2-day window the cure is refused (and not consumed); untreated infection is still fatal after 7 days. `/zombieinfection` shows the time left to start.
 

@@ -40,5 +40,6 @@
   "traitdesc-infected-dose-ready": "ready now",
   "traitdesc-infected-dose-in": "in {0}",
   "traitdesc-infected-fatal": "Fatal in {0}.",
-  "traitdesc-infected-notfatal": "Not fatal."
+  "traitdesc-infected-notfatal": "Not fatal.",
+  "infected-acquired": "You have acquired the trait: Zombie infection. See Character > Traits."
 }

@@ -163,6 +163,15 @@ public static class VariantRegression
         check(!w.HasAttribute(InfectionTrait.FatalDayKey) && !w.HasAttribute(InfectionTrait.NextDoseDayKey) &&
             InfectionTrait.Describe(w,7,(k,a)=>k)==null,"cure removes the infection trait");
 
+        var bitten=new Fixture(true);
+        SilentServerPlayer.Messages.Clear();
+        for(int bite=0;bite<bitten.Core.Settings.NormalHitsToInfect;bite++){bitten.Now+=1000;bitten.Core.Hit(bitten.Player,false);}
+        check(bitten.Player.WatchedAttributes.HasAttribute(SeventhNightSystem.InfectionKey),"four regular bites infect");
+        check(SilentServerPlayer.Messages.Count==1 && SilentServerPlayer.Messages[0].Contains("acquired the trait: Zombie infection"),
+            "infection sends exactly one chat message (the trait notice), no per-bite counters");
+        bitten.Now+=1000;bitten.Core.Hit(bitten.Player,false);
+        check(SilentServerPlayer.Messages.Count==1,"bites after infection stay silent");
+
         var corpse=f.Zombie("zombie");
         typeof(Zombie).GetMethod("PoofIntoDustAndDropLoot",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(corpse,null);
         check(f.Drops.Contains(("game:gear-rusty",f.Core.Settings.CorpseRustyGears)),"corpse drops rusty gears");
@@ -172,7 +181,8 @@ public static class VariantRegression
     sealed class SilentServerPlayer:Vintagestory.Server.ServerPlayer,IServerPlayer
     {
         public SilentServerPlayer():base(null,null){}
-        public new void SendMessage(int groupId,string message,EnumChatType chatType,string data=null){}
+        public static readonly List<string> Messages=new();
+        public new void SendMessage(int groupId,string message,EnumChatType chatType,string data=null){Messages.Add(message);}
     }
     sealed class TestPlayer:EntityPlayer
     {public float Damage,Healing; public override bool ReceiveDamage(DamageSource source,float damage){if(source.Type==EnumDamageType.Heal)Healing+=damage;else Damage+=damage;return true;}}
