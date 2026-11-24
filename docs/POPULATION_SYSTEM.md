@@ -126,22 +126,20 @@ to five fresh ambient zombies, then starts returning its dormant population.
 | Active cap enforced | `Spawn()` checks `ActiveZombieCapReached` for every source | ✔ |
 | Dormant ≠ ambient | separate counters; ambient quota never spent by wakes, wakes never create new population | ✔ |
 | Corrupt save never overwritten | load exception → `zonesLoaded/populationLoaded=false` → no save, server shutdown scheduled | ✔ by code |
-| Migration conserves counts | atomic transaction | ✔; ⚠ the post-commit conservation check is vacuous (see KNOWN_ISSUES) |
+| Migration conserves counts | atomic transaction; `CountStored()` compared before/after; `VerifyDormantCount()` repairs counter drift | ✔ by code + unit tests (2.0.10) |
 
-## 6. Dead / vestigial code in this subsystem
+## 6. Removed dead code (2.0.10)
 
-Present but never called in v2.0.9: `ZombiePopulation.WakeNearby`,
-`ForceWakeCheck`, `WakeMigrantsInOccupiedZones`, `MoveDormant`, `NearPlayer`,
-`TryWake`, `CandidatesNear`. Consequences:
-
-* **⚠** `DormantWakeOnlyInSameZone=false` (documented as restoring a legacy
-  5-chunk wake radius) has **no effect**; neither do `DormantWakeRadiusChunks`,
-  `DormantMaxChunkAttemptsPerCheck` or `DormantDebugLogging`.
-* `DormantChunk.AwaitDeparture` is always reset to `false` on load and is never
-  set to `true`, so all "await departure" checks are no-ops.
-
-Do not delete these without a deliberate decision; they document earlier
-designs and may be useful if a radius-based wake mode is reinstated.
+v2.0.9 contained never-called wake paths (`WakeNearby`, `ForceWakeCheck`,
+`WakeMigrantsInOccupiedZones`, `MoveDormant`, `NearPlayer`, `TryWake`,
+`CandidatesNear`, `WithinWakeRadius`) and the never-set
+`DormantChunk.AwaitDeparture` flag. They were removed in 2.0.10, together with
+the settings that only they read (`DormantWakeOnlyInSameZone`,
+`DormantWakeRadiusChunks`, `DormantMaxChunkAttemptsPerCheck`,
+`DormantDebugLogging`). Wakes have always been zone-only; nothing changed in
+behaviour. Old dormant snapshots still load: their `"AwaitDeparture": false`
+fields are ignored. The source is preserved on branch `baseline/v2.0.9` if a
+radius-based wake mode is ever wanted.
 
 ## 7. Zombieween interaction
 

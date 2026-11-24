@@ -10,7 +10,7 @@ v2.0.9 source; syntax is exactly as registered (VS chat command API).
 | Command | Args | Source | Effect |
 |---|---|---|---|
 | `/zombiehorde` | — | `SeventhNightSystem.cs` | Next scheduled horde (in-game time), frequency, active zombies / cap. Also sent to each player on join (`PlayerReady`). |
-| `/zombieinfection` | — | `SeventhNightSystem.cs` | Your infection state, poison rate, doses taken / required, next-dose time, fatal countdown. Player only. |
+| `/zombieinfection` | — | `SeventhNightSystem.cs` | Your infection state, poison rate, doses taken / required, time left to start the cure (2-day window) or next-dose time, fatal countdown. Player only. |
 
 ## Admin commands (`controlserver`)
 
@@ -50,31 +50,32 @@ v2.0.9 source; syntax is exactly as registered (VS chat command API).
 
 | Short name | Config field | Short name | Config field |
 |---|---|---|---|
-| `grabberchance` | `GrabberSpawnChance` | `hordedays` | `HordeEveryDays` |
-| `hivechance` | `HiveSpawnChance` | `hordeduration` | `HordeDurationSeconds` |
-| `screamerchance` | `ScreamerSpawnChance` | `hordewaveinterval` | `HordeWaveIntervalSeconds` |
-| `bloaterchance` | `BloaterSpawnChance` | `hordewavemin` | `HordeWaveMinZombiesPerPlayer` |
-| `leapcooldown` | `GrabberLeapCooldownSeconds` | `hordewavemax` | `HordeWaveMaxZombiesPerPlayer` |
-| `beecooldown` | `HiveBeeCooldownSeconds` | `routebudget` | `AiRouteRequestsPerSecond` |
-| `diagnostics` | `PerformanceDiagnostics` | `scanbudget` | `AiPreyScansPerSecond` |
-| `ambientlimit` | `ZombiePopDailyAddLimit` | `scaninterval` | `AiPreyScanIntervalSeconds` |
-| `dormantpopulationcap` | `DormantPopulationCap` | `lastseen` | `ZombieLostTargetPursuitSeconds` |
-| `despawndelay` | `ZombieIdleDespawnSeconds` | `keepaliverange` | `ZombieKeepActiveRadiusBlocks` |
-| `npcinterest` | `NpcTraderInterestSeconds` | `stayactive` | `ZombieStayActiveNearPlayers` |
-| `nightonly` | `AmbientSpawnRequiresNight` | `wakebatch` | `DormantWakeBatchSize` |
-| `strictnightonly` | `ZombieSpawnNightOnly` | `wakeinterval` | `DormantWakeIntervalSeconds` |
-| `hordeonly` | `ZombieSpawnHordeNightOnly` | `wakeglobalbatch` | `DormantMaxTotalWakesPerPass` |
-| `activecap` | `MaxActiveZombies` | `dormantreactivation` | `DormantReactivationPerZonePerDay` |
-| `blockbreaking` | `BlockBreakingEnabled` | `migrationhour` | `ZoneMigrationHour` |
-| `blockbreakinterval` | `BlockBreakIntervalSeconds` | `migrationchance` | `ZoneBaseDailyMigrationChance` |
-| `blockbreakchance` | `BlockBreakChance` | `migrationmaxchance` | `ZoneMaxDailyMigrationChance` |
-| `nonhordereinforcementdamage` | `NonHordeBlockReinforcementDamage` | `strongholdbonus` | `ZoneStrongholdBonus` |
-| `hordereinforcementdamage` | `HordeBlockReinforcementDamage` | `playerbonus` | `ZonePlayerPresenceBonus` |
-| `protectreinforced` | `ProtectReinforcedBlocks` | `bonfirebonus` | `ZoneBonfireAttractionBonus` |
-| `spawnchance` | `AmbientSpawnChancePerSecond` | `migrationannounce` | `ZoneMigrationChatAnnouncement` |
-| `spawnlight` | `SpawnMaxLightLevel` | `fatality` | `InfectionFatalEnabled` |
-| `spawnmindistance` | `SpawnMinDistance` | `fataldays` | `InfectionFatalDays` |
-| `spawnmaxdistance` | `SpawnMaxDistance` |  | |
+| `grabberchance` | `GrabberSpawnChance` | `hordeduration` | `HordeDurationSeconds` |
+| `hivechance` | `HiveSpawnChance` | `hordewaveinterval` | `HordeWaveIntervalSeconds` |
+| `screamerchance` | `ScreamerSpawnChance` | `hordewavemin` | `HordeWaveMinZombiesPerPlayer` |
+| `bloaterchance` | `BloaterSpawnChance` | `hordewavemax` | `HordeWaveMaxZombiesPerPlayer` |
+| `leapcooldown` | `GrabberLeapCooldownSeconds` | `routebudget` | `AiRouteRequestsPerSecond` |
+| `beecooldown` | `HiveBeeCooldownSeconds` | `scanbudget` | `AiPreyScansPerSecond` |
+| `diagnostics` | `PerformanceDiagnostics` | `scaninterval` | `AiPreyScanIntervalSeconds` |
+| `ambientlimit` | `ZombiePopDailyAddLimit` | `lastseen` | `ZombieLostTargetPursuitSeconds` |
+| `dormantpopulationcap` | `DormantPopulationCap` | `keepaliverange` | `ZombieKeepActiveRadiusBlocks` |
+| `despawndelay` | `ZombieIdleDespawnSeconds` | `stayactive` | `ZombieStayActiveNearPlayers` |
+| `npcinterest` | `NpcTraderInterestSeconds` | `wakebatch` | `DormantWakeBatchSize` |
+| `nightonly` | `AmbientSpawnRequiresNight` | `wakeinterval` | `DormantWakeIntervalSeconds` |
+| `strictnightonly` | `ZombieSpawnNightOnly` | `wakeglobalbatch` | `DormantMaxTotalWakesPerPass` |
+| `hordeonly` | `ZombieSpawnHordeNightOnly` | `dormantreactivation` | `DormantReactivationPerZonePerDay` |
+| `activecap` | `MaxActiveZombies` | `migrationhour` | `ZoneMigrationHour` |
+| `blockbreaking` | `BlockBreakingEnabled` | `migrationchance` | `ZoneBaseDailyMigrationChance` |
+| `blockbreakinterval` | `BlockBreakIntervalSeconds` | `migrationmaxchance` | `ZoneMaxDailyMigrationChance` |
+| `blockbreakchance` | `BlockBreakChance` | `strongholdbonus` | `ZoneStrongholdBonus` |
+| `nonhordereinforcementdamage` | `NonHordeBlockReinforcementDamage` | `playerbonus` | `ZonePlayerPresenceBonus` |
+| `hordereinforcementdamage` | `HordeBlockReinforcementDamage` | `bonfirebonus` | `ZoneBonfireAttractionBonus` |
+| `protectreinforced` | `ProtectReinforcedBlocks` | `migrationannounce` | `ZoneMigrationChatAnnouncement` |
+| `spawnchance` | `AmbientSpawnChancePerSecond` | `fatality` | `InfectionFatalEnabled` |
+| `spawnlight` | `SpawnMaxLightLevel` | `fataldays` | `InfectionFatalDays` |
+| `spawnmindistance` | `SpawnMinDistance` | `curestartwindow` | `CureStartWindowDays` |
+| `spawnmaxdistance` | `SpawnMaxDistance` | `rustygears` | `CorpseRustyGears` |
+| `hordedays` | `HordeEveryDays` |  | |
 
 Any other setting must be edited in the JSON files while the server is stopped
 (see `CONFIGURATION.md`).

@@ -35,12 +35,14 @@ than `ZoneFarmAnimalThreshold` loaded farm animals.
 | Unmasked Survival players present at sunset | `+0.10` each | a player wearing a usable funeral mask (crouching not required) is not counted |
 | Livestock | `+0.12` if > 10 loaded sheep/goat/pig/chicken/cow… | loaded entities only |
 | Forge | `+0.08` | industry scan, see below |
-| Charcoal pit / pile | `+0.10` | |
+| Active charcoal pit | `+0.10` | |
 | Anvil | `+0.06` | |
 
-Industry is found by a once-per-sunset scan of **loaded** columns in zones that
-contain a Survival player or a stronghold, from 8 below to 24 above the
-heightmap surface (block code contains `forge`, `charcoalpit/pile`, `anvil`).
+Industry is found by a once-per-sunset scan of the **block entities** in
+**loaded** chunks of zones that contain a Survival player or a stronghold,
+counting only those from 8 below to 24 above the heightmap surface (block code
+contains `forge`, `charcoalpit`, `anvil`). Since 2.0.10 finished charcoal piles
+(plain blocks) no longer count; an active charcoal pit does.
 
 Score → attraction **radius (zone rings)** via `AttractionTierRadius`:
 
@@ -129,14 +131,17 @@ chat message. A global chat line announces the total moved if
 * Strongholds both attract (+0.40) and protect (auto-reinforce newly placed
   blocks in their zone at 5/50/300 strength for wood/copper/iron).
 
-## 7. Inert migration settings
+## 7. Removed settings (2.0.10)
 
-These exist in `Config` and are written to the advanced config file but are not
-read by v2.0.9 migration code: `ZoneSettlementThresholdChanges`,
-`ZoneSettlementAttractionRadiusZones`, `ZoneBlockChangeAttractionRadiusZones`,
-`ZonePlayerDeathAttractionRadiusZones`, `ZoneStrongholdAttractionRadiusZones`,
-`ZoneHotspotAttractionRadiusZones`, `ZoneStonePathAttractionRadiusZones`,
-`ZonePlayerPresenceAttractionRadiusZones`, `ZoneHighAttractionRadiusZones`,
+v2.0.9 wrote 13 migration settings that no code read
+(`ZoneSettlementThresholdChanges`, the eight `Zone*AttractionRadiusZones` keys,
 `ZoneHighAttractionThreshold`, `ZoneRandomDirectionWeightMultiplier`,
-`ZoneFuneralMaskPresenceReduction` (masks remove the whole presence bonus
-instead), `ZoneStrongholdReinforcement` (tiers are fixed constants).
+`ZoneFuneralMaskPresenceReduction`, `ZoneStrongholdReinforcement`). They were
+removed in 2.0.10; saved values are ignored. Masks still remove the whole
+presence bonus, and stronghold tiers remain the fixed 5/50/300.
+
+## 8. Building records
+
+Stronghold, bell and bonfire records are validated against the world
+(loaded chunks only) before every roll, on placement in stronghold zones and
+for `/lastwatch`; blocks broken by zombies are forgotten immediately.

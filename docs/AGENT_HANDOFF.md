@@ -8,18 +8,18 @@
 
 | Field | Value |
 |---|---|
-| Project version | **2.0.9** (stable gameplay; no gameplay changes since baseline) |
+| Project version | **2.0.10** (unreleased) on `fix/2.0.10-stability`; `main` = 2.0.9 gameplay + docs/tooling until merged |
 | Game target | Vintage Story 1.22.7, .NET 10 |
 | Repository | https://github.com/Beanidip/the-last-watch-zombies (visibility: **public** — owner confirmed public is fine) |
 | Primary branch | `main` |
-| Current development branch | `main` (docs/tooling only so far). Use `feature/<topic>` or `fix/<issue#>-<slug>` branches for code changes |
+| Current development branch | `fix/2.0.10-stability` (gameplay fixes). Use `feature/<topic>` or `fix/<issue#>-<slug>` branches for code changes |
 | Pristine baseline | commit `b1f4675` on branch **`baseline/v2.0.9`** (never move/rebase it). Tree is byte-identical to `TheLastWatchZombies_Source_v2.0.9_Stable.zip` (SHA-256 `8c43186eb50a11f65ef7620f56a744259054bef74c7e51f985b5facc5b6ad062`). Parent `11b5b30` is the owner's GitHub "Initial commit" (LICENSE only) |
 | Tag `v2.0.9` | **Not on GitHub yet.** The cloud agent session's proxy blocks tag pushes. Owner: run the command below once |
-| Last completed task | Onboarding: import, CI, documentation, audit, issue backlog |
+| Last completed task | 2.0.10 stability fixes: rusty-gear loot, 2-day cure start window, #3, #5/#9 perf, #7, #10, #12 |
 | Build status | ✅ Release build 0 warnings / 0 errors (local Linux + GitHub Actions) |
-| Test status | ✅ 1825/1825 regression assertions (local + CI). ❌ no dedicated-server or in-game test performed by agents yet |
-| Open known issues | `docs/KNOWN_ISSUES.md` (16 items, none reproduced in game) |
-| Immediate next steps | Milestone M1 in `DEVELOPMENT_ROADMAP.md`, starting with the dedicated-server smoke test (#1) |
+| Test status | ✅ 1875/1875 regression assertions locally on 2.0.10 (CI result: see the branch's latest Actions run). ❌ no dedicated-server or in-game test performed by agents yet |
+| Open known issues | `docs/KNOWN_ISSUES.md`: 8 fixed in 2.0.10 (code + tests), 8 open (#1 smoke test, #2/#8 zombieween cure loss, #11 horde restart, #12-scale growth, #13 late-join horde, …) |
+| Immediate next steps | Owner review/merge of `fix/2.0.10-stability`; dedicated-server smoke test (#1); in-game run of TESTING §4 F/G/H; then #11 horde persistence and #8 zombieween cure loss |
 | Issue backlog | #1 build smoke test · #2 population tests · #3 migration tests + vacuous check · #4 spawning verification · #5 AI perf · #6 infection/cure feasibility · #7 siege/ghost strongholds · #8 zombieween cure loss/growth · #9 stress tests · #10 docs/config review · #11 horde restart · #12 unreachable bait · #13 late-join horde (design) |
 
 Create the tag (owner, from any clone):
@@ -93,6 +93,21 @@ python3 scripts/gen-config-doc.py config-dump > docs/CONFIGURATION.md
 ```
 
 ## Dev log (newest first)
+
+### 2026-11-24 — 2.0.10 stability session (Claude Code, cloud)
+- Owner requested: rusty gears instead of raw hide; 2 days to start the cure;
+  fix #3, #5/#9 lag sources, #7, #10, #12; clean up; keep JSON valid.
+- Branch `fix/2.0.10-stability`, version bumped to 2.0.10 (modinfo + csproj).
+- Loot: `game:gear-rusty` (`CorpseRustyGears`, migrates `CorpseSmallHides`).
+- Cure: `CureStartWindowDays=2`; treated deadline `firstDose + doses×interval`;
+  window ignored when fatality is disabled (avoids a permanently poisoned player).
+- #7 `ValidateBuildings`/`ForgetBlock`; #12 `BaitPursuitState`; #3
+  `CountStored`/`VerifyDormantCount`; #5 event-driven bait index; #9 block-entity
+  industry scan (charcoal piles no longer count — note for the author).
+- #10: removed dead wake code, `AwaitDeparture`, 34 inert settings and 10 dead
+  upgrade routines; added `scripts/refresh-config-files.sh` (+ CI `--check`).
+- Tests 1875/1875 (50 new, mutation-checked). All 49 JSON files valid. Build 0/0.
+- Not run in game. `DetectionRange` min clamp (32) intentionally left as is.
 
 ### 2026-11-24 — onboarding session (Claude Code, cloud)
 - Extracted the v2.0.9 archive, verified the tree is identical, committed it as

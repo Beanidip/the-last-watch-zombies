@@ -1,5 +1,8 @@
 # Known Issues and Risks (v2.0.9 audit)
 
+Status updated for 2.0.10 (branch `fix/2.0.10-stability`); "Fixed" means fixed in
+code with regression tests, **not** verified in a running game.
+
 Audit performed 2026-11 by static reading of the v2.0.9 source, a clean build,
 the regression suite, and decompilation of the VS 1.22.7 reference assemblies
 where engine behaviour mattered. **No in-game or dedicated-server session was
@@ -16,24 +19,24 @@ Confidence levels:
 Severity: High (data loss / broken core loop), Medium (gameplay bug or notable
 perf risk), Low (cosmetic, diagnostics, docs).
 
-| # | Issue | Area | Confidence | Severity | GitHub |
-|---|---|---|---|---|---|
-| 1 | Active horde does not survive a server restart | Horde | Confirmed (code + engine) | Medium | #11 |
-| 2 | `/zombieween` can silently lose a cure dose on partial inventory insert | Zombieween | Confirmed (code + engine) | Low | #8 |
-| 3 | Infection can become uncurable: fatal clock keeps running during treatment; no config cross-check | Infection | Confirmed (code) | Medium | #6 |
-| 4 | "Ghost" strongholds after non-player removal keep attracting and reinforcing | Settlements/siege | Confirmed (code) | Medium | #7 |
-| 5 | Unreachable rot-bait pile pacifies zombies indefinitely | AI / bait | Confirmed (code) | Medium | #12 |
-| 6 | Scheduled horde silently skipped when no Survival player is online at 17:55–18:00 | Horde | Confirmed (code) | Low–Medium (design?) | #13 |
-| 7 | Migration conservation check can never fire | Population | Confirmed (code) | Low | #3 |
-| 8 | Inert / dead configuration and code paths | Config | Confirmed (code) | Low | #10 |
-| 9 | Shipped `DEFAULT-*.json` and README out of date with source | Docs | Confirmed (tool) | Low | #10 |
-| 10 | Per-ground-storage 2 s tick listener for bait detection | Performance | Confirmed (code) | Medium (large servers) | #5 |
-| 11 | Sunset industry scan (~304k block reads per zone) on main thread | Performance | Confirmed (code) | Medium (many players) | #9 |
-| 12 | Unbounded explored-zone ledger and `/zombieween` pool growth | Performance/persistence | Confirmed (code) | Medium (large worlds) | #8, #9 |
-| 13 | Opening horde wave at 17:55 may be blocked by daylight | Horde | Plausible | Low–Medium | #4, #9 |
-| 14 | Prey detection ignores walls; sneaking never loses an acquired target | AI | Design question | Low | roadmap M4 |
-| 15 | Client funeral-mask durability uses client's local config | Equipment | Confirmed (code) | Low | #10 |
-| 16 | Static Harmony instance shared by client and server sides | Compatibility | Plausible | Low | — |
+| # | Issue | Area | Confidence | Severity | GitHub | Status |
+|---|---|---|---|---|---|---|
+| 1 | Active horde does not survive a server restart | Horde | Confirmed (code + engine) | Medium | #11 | Open |
+| 2 | `/zombieween` can silently lose a cure dose on partial inventory insert | Zombieween | Confirmed (code + engine) | Low | #8 | Open |
+| 3 | Infection can become uncurable: fatal clock keeps running during treatment; no config cross-check | Infection | Confirmed (code) | Medium | #6 | Fixed 2.0.10 (rule changed) |
+| 4 | "Ghost" strongholds after non-player removal keep attracting and reinforcing | Settlements/siege | Confirmed (code) | Medium | #7 | Fixed 2.0.10 |
+| 5 | Unreachable rot-bait pile pacifies zombies indefinitely | AI / bait | Confirmed (code) | Medium | #12 | Fixed 2.0.10 |
+| 6 | Scheduled horde silently skipped when no Survival player is online at 17:55–18:00 | Horde | Confirmed (code) | Low–Medium (design?) | #13 | Open |
+| 7 | Migration conservation check can never fire | Population | Confirmed (code) | Low | #3 | Fixed 2.0.10 |
+| 8 | Inert / dead configuration and code paths | Config | Confirmed (code) | Low | #10 | Fixed 2.0.10 (partly, see below) |
+| 9 | Shipped `DEFAULT-*.json` and README out of date with source | Docs | Confirmed (tool) | Low | #10 | Fixed 2.0.10 |
+| 10 | Per-ground-storage 2 s tick listener for bait detection | Performance | Confirmed (code) | Medium (large servers) | #5 | Fixed 2.0.10 |
+| 11 | Sunset industry scan (~304k block reads per zone) on main thread | Performance | Confirmed (code) | Medium (many players) | #9 | Fixed 2.0.10 |
+| 12 | Unbounded explored-zone ledger and `/zombieween` pool growth | Performance/persistence | Confirmed (code) | Medium (large worlds) | #8, #9 | Open |
+| 13 | Opening horde wave at 17:55 may be blocked by daylight | Horde | Plausible | Low–Medium | #4, #9 | Open |
+| 14 | Prey detection ignores walls; sneaking never loses an acquired target | AI | Design question | Low | roadmap M4 | Open |
+| 15 | Client funeral-mask durability uses client's local config | Equipment | Confirmed (code) | Low | #10 | Open |
+| 16 | Static Harmony instance shared by client and server sides | Compatibility | Plausible | Low | — | Open |
 
 ---
 
@@ -60,6 +63,17 @@ cure receives one; the second is discarded. Fix: after the call, always drop
 
 ### 3. Infection can become uncurable
 
+**Fixed in 2.0.10 (author-directed rule change):** players now have
+`CureStartWindowDays` (2) in-game days after infection to take the first dose;
+later first doses are refused and not consumed (the window is ignored when
+`InfectionFatalEnabled=false`). While treated, the fatal deadline is
+`max(infection + InfectionFatalDays, firstDose + CureDosesRequired × CureDoseIntervalDays)`,
+so any course started in the window can be finished on schedule, for any
+dose count. The first-dose day is stored in `seventhnight-first-cure-dose-day`
+(estimated for older saves). Covered by `StabilityRegression.CureWindow` and
+`VariantRegression.RunStability` (fixture). Not verified in game.
+
+
 `Rules.IsFatalInfection` compares calendar days since infection with
 `InfectionFatalDays` regardless of doses taken. With defaults (6 doses, ≥1 day
 apart, fatal at 7 days) the last dose lands at `firstDose + 5 days`, so a player
@@ -74,6 +88,16 @@ while under treatment? warn?) and add a validation cross-check.
 
 ### 4. Ghost strongholds
 
+**Fixed in 2.0.10:** `LastWatchZones.ValidateBuildings` drops stronghold,
+bell and bonfire records whose block is gone (loaded chunks only; unloaded
+records are kept) and corrects a stronghold's tier from the actual block. It
+runs before stronghold reinforcement on placement, on player breaks in
+stronghold zones, before every migration roll and for `/lastwatch`. Zombie
+sieges additionally call `ForgetBlock` immediately after `BreakBlock` (also
+uncounting stone paths). Covered by `StabilityRegression.BuildingRecords`.
+Not verified in game.
+
+
 Stronghold blocks are plain `Block`s (no block entity), so zombies may break
 them via `TryDamageWallBlock` → `BlockAccessor.BreakBlock(pos, null)` (unless
 claimed). `LastWatchZones.Broken` is only reached for player breaks and returns
@@ -86,6 +110,13 @@ removing the block. Fix: validate stronghold positions (when loaded) during
 `Placed`/migration as is done for bells.
 
 ### 5. Unreachable rot bait pacifies zombies
+
+**Fixed in 2.0.10:** `BaitPursuitState` — a zombie that neither gets ≥1 block
+closer nor stands at the pile with a clear bite for 15 s gives up, ignores that
+pile for 60 s and resumes normal targeting (other piles stay eligible).
+Reachable-bait behaviour is unchanged. Covered by
+`StabilityRegression.BaitGiveUp` (rule level). Not verified in game.
+
 
 `Zombie.TickRotBait` runs before prey scanning and returns `true` while any
 loaded concentrate pile is within 32 blocks, resetting the idle timer. If the
@@ -105,12 +136,26 @@ small servers. Design question.
 
 ### 7. Migration conservation check is vacuous
 
+**Fixed in 2.0.10:** `ApplyMigration` compares `CountStored()` (recomputed from
+chunks) before and after, then `VerifyDormantCount()` logs and repairs any
+counter drift without touching stored counts. Covered by
+`StabilityRegression.DormantCounter`.
+
+
 `ZombiePopulation.ApplyMigration` compares `DormantCount` before and after, but
 `DormantCount` is the `dormantCount` field, which the method never changes —
 it is not recomputed from `chunks`. The check cannot detect a real conservation
 error. Fix: compare against `chunks.Values.Sum(c => c.Normal + c.Alpha)`.
 
 ### 8. Inert / dead configuration and code
+
+**Fixed in 2.0.10:** the dead population methods, `AwaitDeparture`, and 34
+inert config fields/markers with their never-called `Upgrade*` routines were
+removed (old JSON values are ignored and dropped on the next config rewrite;
+`AwaitDeparture` in old dormant snapshots is ignored). The bell message uses the
+configured threshold; NaN fallbacks match the defaults. **Still open:** the
+`DetectionRange` minimum of 32 is unchanged (deliberate pending a decision).
+
 
 * Never-called population methods: `WakeNearby`, `ForceWakeCheck`,
   `WakeMigrantsInOccupiedZones`, `MoveDormant`, `NearPlayer`, `TryWake`,
@@ -133,6 +178,11 @@ error. Fix: compare against `chunks.Values.Sum(c => c.Normal + c.Alpha)`.
 
 ### 9. Stale shipped references
 
+**Fixed in 2.0.10:** `scripts/refresh-config-files.sh` regenerates
+`DEFAULT-*.json`, `CONFIG-REFERENCE.md` and `docs/CONFIGURATION.md` from source;
+CI runs it with `--check` and fails on drift (currently 0).
+
+
 `tools/ConfigDump` reports 58 differences between source defaults and the
 shipped `DEFAULT-thelastwatchzombiesconfig*.json`: all ten variant settings are
 missing, `ZombieLostTargetPursuitSeconds` is 10 (source 25), 21 retired keys are
@@ -142,6 +192,12 @@ supersedes both for defaults.
 
 ### 10. Bait listener on every ground-storage pile
 
+**Fixed in 2.0.10:** the behaviour subscribes to the pile inventory's
+`SlotModified` event (and refreshes on load) instead of a 2 s tick listener;
+`RotBaitSystem` sweeps only its indexed bait piles every 10 s. Performance
+impact not measured.
+
+
 The patch adds `LastWatchRotBait` to **all** vanilla ground-storage blocks; each
 loaded pile registers a 2 s tick listener that scans its inventory, whether or
 not it holds concentrate. On bases with thousands of piles this is a constant
@@ -149,6 +205,13 @@ background cost. Fix direction: refresh on inventory-change events / on
 placement of concentrate only.
 
 ### 11. Sunset industry scan
+
+**Fixed in 2.0.10:** the scan enumerates the block entities of the zone's
+loaded chunks (forge, anvil, charcoal pit are all block entities) within the
+same surface band, instead of reading ~304k blocks. Behaviour change: finished
+`charcoalpile` blocks (no block entity) no longer count; active charcoal pits
+do. Covered by `StabilityRegression.IndustryScan`. Performance impact not measured.
+
 
 `ScanIndustryInLoadedZone` reads every block from 8 below to 24 above the
 surface across all 96×96 columns (≈304k `GetBlock` calls) per zone with a

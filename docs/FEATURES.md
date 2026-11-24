@@ -1,4 +1,4 @@
-# Verified Feature Inventory — v2.0.9
+# Verified Feature Inventory — v2.0.10 (branch `fix/2.0.10-stability`)
 
 Status legend: **Implemented** = present in source and exercised by unit tests or
 clearly wired end-to-end in code; **Implemented (untested in game)** = wired in
@@ -81,7 +81,8 @@ Radius-based wake mode: **inert**.
 |---|---|---|
 | Regular / Alpha hits to infect (within 60 s, damaging hits only) | 4 / 2 | Implemented (unit-tested) |
 | Poison 0.2 HP every 10 real s; 20 s once treatment starts | — | Implemented |
-| Fatal after 7 in-game days (calendar, includes sleep) | on | Implemented — clock does not pause during treatment (KNOWN_ISSUES #3) |
+| First dose must be taken within 2 in-game days of infection (later first doses refused, not consumed; window ignored if fatality is off) | `CureStartWindowDays=2` | Implemented 2.0.10 (unit + fixture tested) |
+| Fatal after 7 in-game days untreated; while treated, deadline extends to first dose + 6 days so a timely course always finishes | on | Implemented 2.0.10 (unit + fixture tested) |
 | 6 doses, ≥1 in-game day apart; early/invalid doses not consumed | — | Implemented (unit-tested spacing) |
 | Each accepted dose heals 20 HP | — | Implemented |
 | Psychedelic visuals 0.4 → 2.0 over the course | on | Implemented (visual only) |
@@ -109,14 +110,14 @@ Cure**. Right-click the cure to take a dose.
 
 | Structure | Recipe | Behaviour | Status |
 |---|---|---|---|
-| Wooden stronghold | 6 sticks + 2 rope + axe (tool) | +0.40 attraction; new blocks placed in its zone auto-reinforced at **5** | Implemented (ghost-record risk, KNOWN_ISSUES #4) |
+| Wooden stronghold | 6 sticks + 2 rope + axe (tool) | +0.40 attraction; new blocks placed in its zone auto-reinforced at **5**. Records are dropped when the block is gone (zombie siege, explosion, other mods) | Implemented (record validation 2.0.10) |
 | Copper stronghold | 5 copper ingots | auto-reinforce **50** | Implemented |
 | Iron stronghold | 5 iron ingots | auto-reinforce **300**; strongest tier in the zone wins | Implemented |
 | Stronghold-zone convenience | — | in a stronghold zone, a player with claim access may break their own reinforced blocks without removing reinforcement first | Implemented |
 | Watchtower bell | 3 copper ingots + 2 sticks | 1/2/3 rings after migration (neighbour arrivals / local arrivals / >30 dormant here); shown on map | Implemented |
 | Pit bonfire | 3 resin + 1 cattail tops | add 4 firewood (right-click), ignite over full 32-firewood ground piles connected beneath (≤128 piles, same zone); burns 9 in-game hours; ≥3 stacks pins zone population, 6/9/12 lure from 1/2/3 rings; yields 1–2 charcoal per pile and consumes the starter | Implemented |
 | Sharpened stakes | 2 sticks + knife + 2 firewood + rope → vanilla `game:palisadestakes-west` | any zombie within 2 blocks is held 3–20 s and takes 5 damage; first trigger starts a 30 s countdown (persisted) after which the stake becomes a loose stick; reusable until then; re-catchable after release | Implemented (unit-tested rules). Brief's "zombie capture … destruction after activation … loose-stick drop" matches: the stake is *replaced by* a loose-stick block rather than dropping an item |
-| Rot Concentrate bait | sneak + right-click a floor → vanilla ground pile | zombies within 32 blocks (same dimension) prioritise the pile, eat 1 per pile per 2 s, then resume; only loaded piles indexed | Implemented (unreachable-pile risk, KNOWN_ISSUES #5) |
+| Rot Concentrate bait | sneak + right-click a floor → vanilla ground pile | zombies within 32 blocks (same dimension) prioritise the pile, eat 1 per pile per 2 s, then resume; only loaded piles indexed (event-driven, 2.0.10). A zombie that makes no progress toward a pile for 15 s ignores it for 60 s | Implemented (give-up 2.0.10) |
 
 ## Stealth equipment
 
@@ -129,7 +130,7 @@ Cure**. Right-click the cure to take a dose.
 ## Corpses and loot
 
 Real deaths leave a corpse for 30 real seconds (while loaded), then a red dust
-puff and: 3 rot, 2 bones, 1 small raw hide; Alphas also 1/10 chance of one
+puff and: 3 rot, 2 bones, 1 rusty gear (`game:gear-rusty`, replaced the small raw hide in 2.0.10); Alphas also 1/10 chance of one
 random funeral mask; Bloaters +32 rot immediately on death. A loot-dropped flag
 prevents duplicates across reloads. Expiry/removal never drops loot. Dormancy is
 never a death. **Implemented.**

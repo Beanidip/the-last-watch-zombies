@@ -38,8 +38,8 @@ wrong.
 | Check | Command | What it covers |
 |---|---|---|
 | Static assets | `python3 scripts/validate-assets.py` | 49 JSON files parse; modinfo/csproj version match; game = 1.22.7; lang + entity files for all six zombie codes |
-| Regression suite | `dotnet run --project tests/Regression.csproj -c Release -p:VintageStoryPath=…` | 1,825 assertions: night/horde calendar, light limit, infection/cure rules, hit windows, target patterns, zone math incl. negative coords, migration steps/conservation, daily resets, budgets, config validation and `/zombieconfig` parsing, dormant pool seed/migrate/cap, stake trap rules (`StakesRegression.cs`), bonfire rules (`BonfireRegression.cs`), variant rules & bait rules (`VariantRegression.cs`) |
-| Config report | `dotnet run --project tools/ConfigDump -c Release -p:VintageStoryPath=… -- config-dump .` | Source defaults; drift vs `DEFAULT-*.json` |
+| Regression suite | `dotnet run --project tests/Regression.csproj -c Release -p:VintageStoryPath=…` | 1,875 assertions (2.0.10): night/horde calendar, light limit, infection/cure rules, hit windows, target patterns, zone math incl. negative coords, migration steps/conservation, daily resets, budgets, config validation and `/zombieconfig` parsing, dormant pool seed/migrate/cap, stake trap rules (`StakesRegression.cs`), bonfire rules (`BonfireRegression.cs`), variant rules & bait rules (`VariantRegression.cs`) |
+| Config artifacts | `bash scripts/refresh-config-files.sh [--check] vs-server` | Regenerates (or checks) `DEFAULT-*.json`, `CONFIG-REFERENCE.md`, `docs/CONFIGURATION.md` from source |
 | CI | `.github/workflows/ci.yml` | All of the above on every push/PR + "package contains no game assemblies" audit |
 
 The tests are a single console program (`tests/Program.cs` calls
@@ -66,6 +66,7 @@ harness.
 | 2026-11-24 | `b1f4675` (v2.0.9 baseline) | ✅ 0 warnings / 0 errors (.NET 10.0.115, Linux, VS 1.22.7 server assemblies) | ✅ 1825/1825 | Local, this audit |
 | 2026-11-24 | `808aa6a` | ✅ | ✅ 1825/1825 | GitHub Actions run 1 (first valid workflow) |
 | 2026-11-24 | — | — | — | Dedicated-server load test **not run** (blocked in the audit environment) |
+| 2026-11-24 | `fix/2.0.10-stability` (2.0.10) | ✅ 0 warnings / 0 errors | ✅ 1875/1875 | Local. All 49 repo JSON files parse; config artifacts match source (drift 0); new tests mutation-checked (re-adding the hide drop / disabling stronghold validation makes them fail). No in-game test |
 
 Never record a test as passed unless it was executed. Append rows here.
 
@@ -117,7 +118,8 @@ excerpts and `/lastwatch` output for each row.
 3. Dose again within <1 in-game day → refused, item not consumed.
 4. Complete 6 doses on consecutive days → cured; psychedelic strength increments.
 5. Leave untreated 7 in-game days → death ("turned" announcement); respawn clears infection.
-6. Start treatment on day 3 → confirm the player cannot finish (KNOWN_ISSUES #3) and record.
+6. Try the first dose at 2.1 days → refused, item kept, `/zombieinfection` says too late. First dose at 1.9 days, then daily → cured on day ~6.9 without dying.
+7. Corpse loot: 3 rot, 2 bones, 1 rusty gear (no hide).
 7. Relog while infected → state persists; P2 sees no desync.
 
 ### G. Siege, strongholds and claims
@@ -126,11 +128,11 @@ excerpts and `/lastwatch` output for each row.
 3. Claimed land: no block damage, no door opening, no spawning.
 4. Chests/doors/BE blocks never broken.
 5. Place each stronghold tier; newly placed blocks in the zone get 5/50/300 reinforcement.
-6. Let zombies break an unclaimed stronghold → check whether `/lastwatch` still lists it (KNOWN_ISSUES #4).
+6. Let zombies break an unclaimed stronghold → `/lastwatch` no longer lists it; new blocks in the zone are not auto-reinforced.
 
 ### H. Traps, bait, equipment, variants
 1. Stakes: zombie within 2 blocks held 3–20 s, 5 damage; stake becomes a loose stick 30 s after first trigger; survives save/reload.
-2. Bait: sneak-place concentrate; zombies within 32 divert, eat 1 per 2 s, resume chasing after; bait behind a sealed wall (KNOWN_ISSUES #5).
+2. Bait: sneak-place concentrate; zombies within 32 divert, eat 1 per 2 s, resume chasing after; bait behind a sealed wall → zombies give up within ~15 s and hunt players again.
 3. Mask crouch → untargeted, durability drains; tunic → untargeted, −30% speed, sickness once per item.
 4. `/zombiespawn grabber|hive|screamer|bloater|alpha` → abilities as in FEATURES.md; bloater burst only on kill.
 5. Alpha funeral-mask drop rate (spawn many alphas; expect ≈10%).

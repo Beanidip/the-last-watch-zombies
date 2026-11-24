@@ -4,9 +4,52 @@ All notable changes to The Last Watch Zombies. Gameplay versions follow
 `modinfo.json`. Repository-only changes (docs, tooling, CI) are listed under
 the version they were made against and do not change the packaged gameplay.
 
-## [Unreleased]
+## [2.0.10] — unreleased (branch `fix/2.0.10-stability`)
 
-### Repository (no gameplay changes)
+Gameplay
+- Corpses drop 1 `game:gear-rusty` instead of 1 `game:hide-raw-small`. Config
+  `CorpseSmallHides` → `CorpseRustyGears` (a saved hide count is carried over
+  once; the old key is retired). `/zombieconfig rustygears`.
+- Infection: new `CureStartWindowDays` (default 2): the first Mycobiotic Cure
+  dose must be taken within 2 in-game days of infection, otherwise it is refused
+  and not consumed (window ignored when `InfectionFatalEnabled=false`). While
+  treated the fatal deadline is `max(infection + InfectionFatalDays,
+  firstDose + CureDosesRequired × CureDoseIntervalDays)`, so a timely course
+  always completes. New player attribute `seventhnight-first-cure-dose-day`
+  (estimated for saves from 2.0.9). `/zombieinfection` shows the start window.
+  `/zombieconfig curestartwindow`. (#6)
+
+Fixes
+- Stronghold/bell/bonfire records are validated against the world and blocks
+  broken by zombies are forgotten immediately: no more "ghost" strongholds
+  attracting zombies and reinforcing new blocks. (#7)
+- Zombies give up on an unreachable rot-concentrate pile after 15 s without
+  progress and ignore it for 60 s. (#12)
+- Migration conservation check now compares recomputed stored counts and
+  repairs counter drift. (#3)
+- Bell overrun message uses `ZoneBellOverrunThreshold`; NaN fallbacks for
+  `ZoneBaseDailyMigrationChance`/`ZoneStrongholdBonus` match their defaults.
+
+Performance (#5, #9)
+- Bait index is event-driven (`SlotModified`) instead of a 2 s timer on every
+  ground-storage pile.
+- Sunset industry scan enumerates loaded block entities instead of ~304k block
+  reads per zone. Finished charcoal piles no longer count; active pits do.
+
+Cleanup (#10)
+- Removed never-called dormant wake code and the never-set `AwaitDeparture`
+  flag; removed 34 inert settings/markers and 10 never-called config upgrade
+  routines (old values are ignored and dropped on the next config rewrite).
+- `DEFAULT-*.json`, `CONFIG-REFERENCE.md`, `docs/CONFIGURATION.md` regenerated
+  from source by `scripts/refresh-config-files.sh`; CI fails on drift.
+- 50 new regression assertions (`tests/StabilityRegression.cs`,
+  `VariantRegression.RunStability`); 1875 total.
+
+Not verified in a running game or dedicated server.
+
+## Repository onboarding — 2026-11-23 (no gameplay changes)
+
+### Repository
 - Imported the v2.0.9 stable source unmodified as the baseline
   (archive SHA-256 `8c43186e…6ad062`, branch `baseline/v2.0.9`, tag `v2.0.9`
   pending — see `docs/AGENT_HANDOFF.md`).

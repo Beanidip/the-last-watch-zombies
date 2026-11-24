@@ -4,7 +4,7 @@ A persistent zombie apocalypse overhaul for **Vintage Story 1.22.7**, featuring
 migration, infection, sieges, settlement ecology and recurring seventh-night
 hordes.
 
-**Author:** Beani · **Version:** 2.0.9 · **Mod ID:** `seventhnightzombies`
+**Author:** Beani · **Version:** 2.0.10 (unreleased) · **Mod ID:** `seventhnightzombies`
 (kept from the original Seventh Night Zombies mod so existing worlds keep their
 items and entities) · **Side:** required on server and clients.
 
@@ -32,9 +32,9 @@ Every seventh night a horde arrives.
   3 minutes scaled to the number of players. Zombies hit harder at walls and
   open doors during a horde.
 * **Infection.** 4 hits from regular zombies, or 2 from an Alpha, infect you.
-  Untreated infection is fatal after 7 in-game days. It is cured by six daily
-  doses of **Mycobiotic Cure**, made from rot concentrate, a poisonous
-  mushroom and a bandage.
+  You have 2 in-game days to start treatment; untreated infection is fatal
+  after 7. It is cured by six daily doses of **Mycobiotic Cure**, made from
+  rot concentrate, a poisonous mushroom and a bandage.
 * **Sieges.** Zombies that get stuck chew through the blocks in their way.
   Reinforcement wears down, while land claims and blocks with stored contents
   are always protected.
@@ -57,7 +57,7 @@ inventory.
 1. **Back up your world and `ModConfig` folder.**
 2. Remove older `seventhnightzombies_*.zip`, `thelastwatch_*.zip` and
    `thelastwatchzombies_*.zip` from `Mods`.
-3. Put `thelastwatchzombies_2.0.9.zip` in `Mods` on the server **and** on every client.
+3. Put `thelastwatchzombies_2.0.10.zip` in `Mods` on the server **and** on every client.
 4. Start the server. It writes
    `ModConfig/thelastwatchzombiesconfigmain.json` and `…configadvanced.json`
    (see [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md)).
@@ -83,7 +83,7 @@ dotnet run --project tests/Regression.csproj -c Release -p:VintageStoryPath=$PWD
 .\TEST-WINDOWS.ps1  -GamePath "$env:APPDATA\Vintagestory"
 ```
 
-Output: `dist/thelastwatchzombies_2.0.9.zip`. Details are in
+Output: `dist/thelastwatchzombies_2.0.10.zip`. Details are in
 [`docs/TESTING.md`](docs/TESTING.md).
 
 ## Repository map
@@ -93,12 +93,12 @@ Output: `dist/thelastwatchzombies_2.0.9.zip`. Details are in
 | `src/` | All C# (26 files; namespace `SeventhNightZombies`) |
 | `assets/seventhnightzombies/` | Entities, shapes, textures, sounds, recipes, lang, ground-storage patch |
 | `assets/seventhnight/` | Legacy entity and item codes for pre-merge worlds |
-| `tests/` | Regression console program (1,825 assertions) |
+| `tests/` | Regression console program (1,875 assertions) |
 | `tools/ConfigDump/` | Regenerates configuration defaults from source |
-| `scripts/` | VS reference fetcher, asset validator, config-doc generator |
+| `scripts/` | VS reference fetcher, asset validator, config generators (`refresh-config-files.sh`) |
 | `validation/` | Author's historical build, test and server logs, and the throwaway QA mod source |
 | `*.md` at root | Author's release notes (`UPDATE-NOTES`, `RELEASE-*`, `ZOMBIEWEEN-ADMIN`, …) |
-| `DEFAULT-*.json` | Author's example configs. **Stale**; use `docs/CONFIGURATION.md` |
+| `DEFAULT-*.json` | Example configs, generated from source (CI checks they match) |
 | `docs/` | Developer documentation (start with `ARCHITECTURE.md`) |
 
 ## Documentation
@@ -118,8 +118,8 @@ Output: `dist/thelastwatchzombies_2.0.9.zip`. Details are in
 
 ## Status
 
-The source compiles cleanly against 1.22.7 and all 1,825 regression assertions
-pass, both locally and in CI. A live multiplayer acceptance test has **not**
+The source compiles cleanly against 1.22.7 and all 1,875 regression assertions
+pass locally. A live multiplayer acceptance test has **not**
 been performed yet; see [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md) before
 running a public event.
 

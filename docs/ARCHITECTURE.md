@@ -1,4 +1,4 @@
-# Architecture — The Last Watch Zombies v2.0.9
+# Architecture — The Last Watch Zombies v2.0.10
 
 Verified against the v2.0.9 source (`baseline/v2.0.9` branch / commit `b1f4675`).
 Line references are to that commit. Everything here was read from code; nothing
@@ -10,7 +10,7 @@ was verified in a running game unless stated.
 |---|---|
 | Mod ID (`modinfo.json`) | `seventhnightzombies` — deliberately kept from the pre-merge mod so saved item/entity codes keep working |
 | Display name | The Last Watch Zombies |
-| Version | 2.0.9 (`modinfo.json` and `<Version>` in the csproj must match; CI checks this) |
+| Version | 2.0.10 on `fix/2.0.10-stability` (`modinfo.json` and `<Version>` in the csproj must match; CI checks this) |
 | Game | Vintage Story **1.22.7**, `side: Universal`, required on client and server |
 | C# namespace | `SeventhNightZombies` |
 | Target framework | `net10.0` (VS 1.22 runs on .NET 10) |
@@ -195,9 +195,9 @@ the vanilla bee entity (via `seventhnightzombies:zombiebees`).
 | Direct-pursuit ray (≤15 block samples) | `CanDirectPursue` | every 0.55 s while chasing | per zombie |
 | Stake proximity scan (≈6×6×6 blocks) | `TickPalisadeTrap` | every 1 s per zombie | `StakeScanBudget` 64/s |
 | Bait nearest-pile search | `RotBaitSystem.Nearest` | every ~1 s per idle zombie | O(loaded bait piles) |
-| Bait pile refresh listener | `RotBaitBehavior` | every 2 s **per loaded ground-storage pile (any contents)** | unbounded |
+| Bait pile index | `RotBaitBehavior` / `RotBaitSystem.Prune` | on inventory `SlotModified` events; 10 s sweep of indexed bait piles only | O(bait piles) (2.0.10; was a 2 s timer per ground pile) |
 | Spawn placement search | `TrySpawnNear` | ≤1 per occupied zone per second | `SpawnPositionAttempts`=64 × ≤11 heights |
-| Industry block scan (96×96×33 = ~304k `GetBlock`) | `ScanIndustryInLoadedZone` | once per sunset per player/stronghold zone | stops early when all 3 found |
+| Industry scan over loaded chunks' block entities (≤72 chunk lookups) | `ScanIndustryInLoadedZone` | once per sunset per player/stronghold zone | O(block entities); stops early when all 3 found (2.0.10; was ~304k `GetBlock`) |
 | Migration | `RunMigration` | once per sunset | O(dormant individuals) RNG draws + O(chunks) |
 | `/lastwatch` dormant count | `SnapshotAt` → `MigrationSnapshot()` | per command | copies the entire dormant pool |
 
