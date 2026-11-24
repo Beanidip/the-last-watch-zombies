@@ -19,7 +19,8 @@
 | Build status | ✅ Release build 0 warnings / 0 errors (local Linux + GitHub Actions) |
 | Test status | ✅ 1825/1825 regression assertions (local + CI). ❌ no dedicated-server or in-game test performed by agents yet |
 | Open known issues | `docs/KNOWN_ISSUES.md` (16 items, none reproduced in game) |
-| Immediate next steps | Milestone M1 in `DEVELOPMENT_ROADMAP.md`, starting with the dedicated-server smoke test |
+| Immediate next steps | Milestone M1 in `DEVELOPMENT_ROADMAP.md`, starting with the dedicated-server smoke test (#1) |
+| Issue backlog | #1 build smoke test · #2 population tests · #3 migration tests + vacuous check · #4 spawning verification · #5 AI perf · #6 infection/cure feasibility · #7 siege/ghost strongholds · #8 zombieween cure loss/growth · #9 stress tests · #10 docs/config review · #11 horde restart · #12 unreachable bait · #13 late-join horde (design) |
 
 Create the tag (owner, from any clone):
 
@@ -106,6 +107,6 @@ python3 scripts/gen-config-doc.py config-dump > docs/CONFIGURATION.md
 - Decompiled `TryGiveItemstack` and `ServerMain.ElapsedMilliseconds` to confirm
   KI#2 and KI#1.
 - Dedicated-server smoke test attempted but blocked by session policy, **not run**.
-- Created the GitHub issue backlog (see the issues list on GitHub, labels
+- Created GitHub issues #1–#13 (labels
   `bug`, `performance`, `enhancement`, `testing`, `documentation`, `build`,
   `needs-verification`).

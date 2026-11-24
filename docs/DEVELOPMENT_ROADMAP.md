@@ -15,22 +15,22 @@ Repository, pristine baseline, reproducible Linux/CI build, docs, issue backlog.
 Goal: fix confirmed-by-code defects with no balance changes, plus the first
 real dedicated-server verification.
 
-1. **Dedicated-server smoke test** (headless boot with the mod, fail on
+1. **Dedicated-server smoke test** (#1) (headless boot with the mod, fail on
    exceptions/patch errors) — locally and, if feasible, in CI. Gate for all later work.
-2. **Horde persistence across restart** (KI#1): persist remaining duration +
+2. **Horde persistence across restart** (KI#1, #11): persist remaining duration +
    natural flag; restore on load; regression test via fixture.
-3. **Zombieween partial-insert cure loss** (KI#2): always drop leftovers.
-4. **Ghost strongholds** (KI#4): validate loaded stronghold records (as bells
+3. **Zombieween partial-insert cure loss** (KI#2, #8): always drop leftovers.
+4. **Ghost strongholds** (KI#4, #7): validate loaded stronghold records (as bells
    are) on placement-reinforcement and at migration.
-5. **Unreachable bait** (KI#5): give up after repeated route failures / no
+5. **Unreachable bait** (KI#5, #12): give up after repeated route failures / no
    progress; temporary per-zombie ignore.
-6. **Migration conservation check** (KI#7): recompute from chunks.
-7. **Infection/cure feasibility** (KI#3): at minimum, a `Validate()` cross-check
+6. **Migration conservation check** (KI#7, #3): recompute from chunks.
+7. **Infection/cure feasibility** (KI#3, #6): at minimum, a `Validate()` cross-check
    and a log warning when `(CureDosesRequired-1)×CureDoseIntervalDays ≥
    InfectionFatalDays`; gameplay rule change only with the author's decision.
 8. Refresh shipped `DEFAULT-*.json` from `tools/ConfigDump`; fix bell message
    hardcoded "30"; align NaN fallbacks with defaults.
-9. Run the full `TESTING.md` §4 plan on a two-player server; record results.
+9. Population tests (#2), then run the full `TESTING.md` §4 plan on a two-player server; record results.
 
 Exit criteria: CI green, all new tests pass, smoke test passes, §4 plan run
 with results recorded in `TESTING.md`, CHANGELOG entry, author approval
@@ -38,7 +38,7 @@ before any release.
 
 ## M2 — Performance on long-running servers
 
-1. Measure first (TESTING §4.J): 250 active zombies, 50k dormant, 2k ground piles,
+1. Measure first (TESTING §4.J, #9, #5): 250 active zombies, 50k dormant, 2k ground piles,
    10+ player zones at sunset. Record `/zombieperf`.
 2. Bait index without per-pile tick listeners (KI#10).
 3. Incremental/cached industry scan (KI#11).
@@ -47,7 +47,7 @@ before any release.
 5. Bound or compact `ExploredZones` (e.g. run-length or region bitsets) while
    keeping the save key backward compatible.
 
-## M3 — Configuration hygiene
+## M3 — Configuration hygiene (#10)
 
 1. Decide per inert key: implement, retire (add to `RetiredKeys`), or document
    (KI#8). Especially `DormantWakeOnlyInSameZone` — either restore the radius
@@ -67,7 +67,7 @@ Candidates gathered during the audit — **not commitments**:
 * Line-of-sight / noise-based detection (KI#14), sneaking that can lose pursuit.
 * Optional retention of variant type in dormant storage (would need a new
   save format version with migration).
-* Horde catch-up for players who join after sunset on horde night (KI#6).
+* Horde catch-up for players who join after sunset on horde night (KI#6, #13).
 * Treatment that pauses or extends the fatal clock (KI#3).
 * Admin command to export population statistics.
 

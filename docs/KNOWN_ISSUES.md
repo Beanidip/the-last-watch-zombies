@@ -16,24 +16,24 @@ Confidence levels:
 Severity: High (data loss / broken core loop), Medium (gameplay bug or notable
 perf risk), Low (cosmetic, diagnostics, docs).
 
-| # | Issue | Area | Confidence | Severity |
-|---|---|---|---|---|
-| 1 | Active horde does not survive a server restart | Horde | Confirmed (code + engine) | Medium |
-| 2 | `/zombieween` can silently lose a cure dose on partial inventory insert | Zombieween | Confirmed (code + engine) | Low |
-| 3 | Infection can become uncurable: fatal clock keeps running during treatment; no config cross-check | Infection | Confirmed (code) | Medium |
-| 4 | "Ghost" strongholds after non-player removal keep attracting and reinforcing | Settlements/siege | Confirmed (code) | Medium |
-| 5 | Unreachable rot-bait pile pacifies zombies indefinitely | AI / bait | Confirmed (code) | Medium |
-| 6 | Scheduled horde silently skipped when no Survival player is online at 17:55–18:00 | Horde | Confirmed (code) | Low–Medium (design?) |
-| 7 | Migration conservation check can never fire | Population | Confirmed (code) | Low |
-| 8 | Inert / dead configuration and code paths | Config | Confirmed (code) | Low |
-| 9 | Shipped `DEFAULT-*.json` and README out of date with source | Docs | Confirmed (tool) | Low |
-| 10 | Per-ground-storage 2 s tick listener for bait detection | Performance | Confirmed (code) | Medium (large servers) |
-| 11 | Sunset industry scan (~304k block reads per zone) on main thread | Performance | Confirmed (code) | Medium (many players) |
-| 12 | Unbounded explored-zone ledger and `/zombieween` pool growth | Performance/persistence | Confirmed (code) | Medium (large worlds) |
-| 13 | Opening horde wave at 17:55 may be blocked by daylight | Horde | Plausible | Low–Medium |
-| 14 | Prey detection ignores walls; sneaking never loses an acquired target | AI | Design question | Low |
-| 15 | Client funeral-mask durability uses client's local config | Equipment | Confirmed (code) | Low |
-| 16 | Static Harmony instance shared by client and server sides | Compatibility | Plausible | Low |
+| # | Issue | Area | Confidence | Severity | GitHub |
+|---|---|---|---|---|---|
+| 1 | Active horde does not survive a server restart | Horde | Confirmed (code + engine) | Medium | #11 |
+| 2 | `/zombieween` can silently lose a cure dose on partial inventory insert | Zombieween | Confirmed (code + engine) | Low | #8 |
+| 3 | Infection can become uncurable: fatal clock keeps running during treatment; no config cross-check | Infection | Confirmed (code) | Medium | #6 |
+| 4 | "Ghost" strongholds after non-player removal keep attracting and reinforcing | Settlements/siege | Confirmed (code) | Medium | #7 |
+| 5 | Unreachable rot-bait pile pacifies zombies indefinitely | AI / bait | Confirmed (code) | Medium | #12 |
+| 6 | Scheduled horde silently skipped when no Survival player is online at 17:55–18:00 | Horde | Confirmed (code) | Low–Medium (design?) | #13 |
+| 7 | Migration conservation check can never fire | Population | Confirmed (code) | Low | #3 |
+| 8 | Inert / dead configuration and code paths | Config | Confirmed (code) | Low | #10 |
+| 9 | Shipped `DEFAULT-*.json` and README out of date with source | Docs | Confirmed (tool) | Low | #10 |
+| 10 | Per-ground-storage 2 s tick listener for bait detection | Performance | Confirmed (code) | Medium (large servers) | #5 |
+| 11 | Sunset industry scan (~304k block reads per zone) on main thread | Performance | Confirmed (code) | Medium (many players) | #9 |
+| 12 | Unbounded explored-zone ledger and `/zombieween` pool growth | Performance/persistence | Confirmed (code) | Medium (large worlds) | #8, #9 |
+| 13 | Opening horde wave at 17:55 may be blocked by daylight | Horde | Plausible | Low–Medium | #4, #9 |
+| 14 | Prey detection ignores walls; sneaking never loses an acquired target | AI | Design question | Low | roadmap M4 |
+| 15 | Client funeral-mask durability uses client's local config | Equipment | Confirmed (code) | Low | #10 |
+| 16 | Static Harmony instance shared by client and server sides | Compatibility | Plausible | Low | — |
 
 ---
 
