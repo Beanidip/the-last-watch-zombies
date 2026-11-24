@@ -1,21 +1,44 @@
-{
-  "ingredientPattern": "MB",
-  "width": 2,
-  "height": 1,
-  "shapeless": true,
-  "ingredients": {
-    "M": {
-      "type": "item",
-      "code": "seventhnightzombies:mycobiotic"
+[
+  {
+    "ingredientPattern": "MB",
+    "width": 2,
+    "height": 1,
+    "shapeless": true,
+    "ingredients": {
+      "M": {
+        "type": "item",
+        "code": "seventhnightzombies:mycobiotic"
+      },
+      "B": {
+        "type": "item",
+        "code": "game:bandage-clean"
+      }
     },
-    "B": {
+    "output": {
       "type": "item",
-      "code": "game:bandage-clean"
+      "code": "seventhnightzombies:mycobioticcure",
+      "quantity": 1
     }
   },
-  "output": {
-    "type": "item",
-    "code": "seventhnightzombies:mycobioticcure",
-    "quantity": 1
+  {
+    "ingredientPattern": "MB",
+    "width": 2,
+    "height": 1,
+    "shapeless": true,
+    "ingredients": {
+      "M": {
+        "type": "item",
+        "code": "seventhnightzombies:mycobiotic"
+      },
+      "B": {
+        "type": "item",
+        "code": "game:poultice-*-horsetail"
+      }
+    },
+    "output": {
+      "type": "item",
+      "code": "seventhnightzombies:mycobioticcure",
+      "quantity": 1
+    }
   }
-}
+]

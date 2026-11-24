@@ -149,6 +149,9 @@ public static class VariantRegression
         f.Day=2.0;
         check(f.Core.TryTakeCureDose(f.Player) && f.Player.WatchedAttributes.GetInt(SeventhNightSystem.CureDosesKey)==1,"first dose at exactly 2 days is accepted");
         check(Math.Abs(f.Player.WatchedAttributes.GetDouble(SeventhNightSystem.CureFirstDoseDayKey)-2.0)<1e-9,"first dose day recorded");
+        var w=f.Player.WatchedAttributes;
+        check(Math.Abs(w.GetDouble(InfectionTrait.FatalDayKey)-8)<1e-9 && Math.Abs(w.GetDouble(InfectionTrait.NextDoseDayKey)-3)<1e-9 &&
+            w.GetInt(InfectionTrait.DosesRequiredKey)==6,"server publishes treated deadlines for the Traits tab");
         bool allAccepted=true;
         for(int dose=2;dose<=f.Core.Settings.CureDosesRequired;dose++)
         {
@@ -157,6 +160,8 @@ public static class VariantRegression
         }
         check(allAccepted && !f.Player.WatchedAttributes.HasAttribute(SeventhNightSystem.InfectionKey),"course started on day 2 completes on day 7 without dying");
         check(!f.Player.WatchedAttributes.HasAttribute(SeventhNightSystem.CureFirstDoseDayKey),"cure clears the first-dose record");
+        check(!w.HasAttribute(InfectionTrait.FatalDayKey) && !w.HasAttribute(InfectionTrait.NextDoseDayKey) &&
+            InfectionTrait.Describe(w,7,(k,a)=>k)==null,"cure removes the infection trait");
 
         var corpse=f.Zombie("zombie");
         typeof(Zombie).GetMethod("PoofIntoDustAndDropLoot",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(corpse,null);

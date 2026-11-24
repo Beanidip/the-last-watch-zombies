@@ -48,7 +48,8 @@ Non-ModSystem services owned by `SeventhNightSystem`:
 | `SpawnRetryBackoff` | `src/SpawnRetryBackoff.cs` | Per-zone 15/30/60 s backoff after repeated placement failures |
 | `ZombieMaskService` | `src/ZombieMaskService.cs` | Funeral-mask camouflage + durability drain |
 | `RotCoveredTunicService` | `src/RotCoveredTunicService.cs` | Tunic camouflage, durability drain, first-wear sickness |
-| `CompatibilityHooks` | `src/CompatibilityHooks.cs` | Harmony prefix on `EntityPlayer.PlayEntitySound` to mute pain sounds while an eye bandage is worn |
+| `CompatibilityHooks` | `src/CompatibilityHooks.cs` | Harmony prefix on `EntityPlayer.PlayEntitySound` (mute pain sounds with an eye bandage); postfix on `CharacterSystem.getClassTraitText` (client) appending the infection line from `InfectionTrait` |
+| `InfectionTrait` | `src/InfectionTrait.cs` | Formats the Traits-tab infection line from watched attributes the server publishes (`SyncInfectionDisplay`) |
 | `RotTunicVisuals` | `src/RotTunicVisuals.cs` | `AssetsFinalize`: copies vanilla grass-shirt shape/attachment data onto the tunic |
 
 Registered classes (`Start`): entity `SeventhNightZombie` → `Zombie`; entity

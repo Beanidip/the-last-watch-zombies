@@ -58,6 +58,17 @@ for code in ZOMBIE_CODES:
     if not (ROOT / f"assets/seventhnightzombies/entities/{code}.json").exists():
         fail(f"missing entity asset {code}.json")
 
+# Mycobiotic Cure must be craftable with a clean bandage OR a horsetail poultice.
+cure = parsed.get(ROOT / "assets/seventhnightzombies/recipes/grid/mycobioticcure.json")
+cure = cure if isinstance(cure, list) else [cure] if cure else []
+binders = sorted({ing.get("code") for r in cure for k, ing in r.get("ingredients", {}).items()
+                  if ing.get("code") != "seventhnightzombies:mycobiotic"})
+if binders != ["game:bandage-clean", "game:poultice-*-horsetail"]:
+    fail(f"mycobioticcure recipes should accept bandage or horsetail poultice, found {binders}")
+for r in cure:
+    if r.get("output", {}).get("code") != "seventhnightzombies:mycobioticcure":
+        fail("a mycobioticcure recipe has the wrong output")
+
 if failures:
     print(f"{len(failures)} check(s) failed")
     sys.exit(1)

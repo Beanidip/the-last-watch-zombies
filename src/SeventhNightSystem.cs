@@ -202,6 +202,7 @@ public partial class SeventhNightSystem : ModSystem
     {
         // Use the locally configured values for client-side durability display.
         // The server's config remains authoritative for wear and camouflage.
+        CompatibilityHooks.ClientApi = api;
         var localSettings = StandaloneConfigStorage.LoadClient(api);
         localSettings.Validate();
         ZombieMaskService.SetMaskDurabilities(api, localSettings.FuneralMask1Durability, localSettings.OtherFuneralMaskDurability);
@@ -467,6 +468,7 @@ public partial class SeventhNightSystem : ModSystem
             p.WatchedAttributes.RemoveAttribute(CureFirstDoseDayKey);
             p.WatchedAttributes.RemoveAttribute(LegacyPoulticeKey);
             ClearHits(uid);
+            SyncInfectionDisplay(p);
             Tell(p, $"The wound burns. Take your first Mycobiotic Cure dose within {Settings.CureStartWindowDays:0.##} in-game day(s) or the infection can no longer be stopped; it is fatal after {Settings.InfectionFatalDays:0.##} in-game days. A full course is {Settings.CureDosesRequired} doses, one every {Settings.CureDoseIntervalDays:0.##} in-game day(s).");
         }
         else Tell(p, $"{(alpha ? "Alpha Zombie" : "Zombie")} wound: {recent.Count}/{required} hits within {Settings.HitWindowSeconds:0} seconds.");
@@ -517,6 +519,7 @@ public partial class SeventhNightSystem : ModSystem
             player.WatchedAttributes.RemoveAttribute(CureDosesKey);
             player.WatchedAttributes.RemoveAttribute(CureLastDoseDayKey);
             player.WatchedAttributes.RemoveAttribute(CureFirstDoseDayKey);
+            ClearInfectionDisplay(player);
             ClearHits(player.Player.PlayerUID);
             Tell(player, "The Mycobiotic Cure has worked. The infection has been eliminated!");
         }
@@ -532,6 +535,7 @@ public partial class SeventhNightSystem : ModSystem
                 player.WatchedAttributes.SetDouble(InfectionKey, 0);
                 Tell(player, $"First Mycobiotic Cure dose received. Poison now strikes every {Rules.PoisonIntervalSeconds(doses, Settings):0} seconds.");
             }
+            SyncInfectionDisplay(player);
             Tell(player, $"Mycobiotic Cure dose {doses}/{Settings.CureDosesRequired} applied. Take the next dose after {Settings.CureDoseIntervalDays:0.##} in-game day(s).");
         }
         // ONLY after an accepted dose, while the player is alive. This is the
@@ -580,6 +584,36 @@ public partial class SeventhNightSystem : ModSystem
             Type = EnumDamageType.Poison,
             IgnoreInvFrames = true
         }, lethalDamage);
+    }
+    // Publish the server's infection deadlines for the client Traits tab.
+    internal void SyncInfectionDisplay(EntityPlayer player)
+    {
+        var w = player?.WatchedAttributes;
+        if (w == null || Server == null) return;
+        if (!w.HasAttribute(InfectionKey)) { ClearInfectionDisplay(player); return; }
+        double now = Server.World.Calendar.TotalDays;
+        double infectedAt = w.GetDouble(InfectionStartDayKey, now);
+        int doses = w.GetInt(CureDosesKey);
+        bool fatalOn = Settings.InfectionFatalEnabled;
+        SetIfChanged(w, InfectionTrait.FatalDayKey, fatalOn
+            ? Rules.FatalDeadlineDay(infectedAt, doses, FirstDoseDay(player, doses, infectedAt), Settings) : -1);
+        SetIfChanged(w, InfectionTrait.CureStartByDayKey, fatalOn ? infectedAt + Settings.CureStartWindowDays : -1);
+        SetIfChanged(w, InfectionTrait.NextDoseDayKey, doses > 0
+            ? w.GetDouble(CureLastDoseDayKey, now) + Settings.CureDoseIntervalDays : -1);
+        if (w.GetInt(InfectionTrait.DosesRequiredKey, -1) != Settings.CureDosesRequired)
+            w.SetInt(InfectionTrait.DosesRequiredKey, Settings.CureDosesRequired);
+    }
+    static void SetIfChanged(Vintagestory.API.Datastructures.ITreeAttribute w, string key, double value)
+    {
+        if (!w.HasAttribute(key) || Math.Abs(w.GetDouble(key) - value) > 1e-9) w.SetDouble(key, value);
+    }
+    internal static void ClearInfectionDisplay(EntityPlayer player)
+    {
+        var w = player?.WatchedAttributes;
+        if (w == null) return;
+        foreach (var key in new[] { InfectionTrait.FatalDayKey, InfectionTrait.CureStartByDayKey,
+                     InfectionTrait.NextDoseDayKey, InfectionTrait.DosesRequiredKey })
+            if (w.HasAttribute(key)) w.RemoveAttribute(key);
     }
     // Day of the first accepted dose. Saves from before 2.0.10 have no record:
     // estimate it from the last dose and the regular interval, clamped so it
@@ -688,6 +722,9 @@ public partial class SeventhNightSystem : ModSystem
                 e.WatchedAttributes.SetDouble(InfectionStartDayKey, Server.World.Calendar.TotalDays);
             double infectedAt = e.WatchedAttributes.GetDouble(InfectionStartDayKey);
             int dosesTaken = e.WatchedAttributes.GetInt(CureDosesKey);
+            // Keeps the Traits-tab deadlines current (old saves, config changes).
+            // Writes only when a value actually changes.
+            SyncInfectionDisplay((EntityPlayer)e);
             if (Rules.IsFatalInfection(infectedAt, Server.World.Calendar.TotalDays, dosesTaken,
                     FirstDoseDay((EntityPlayer)e, dosesTaken, infectedAt), Settings))
             {
@@ -1229,6 +1266,7 @@ public partial class SeventhNightSystem : ModSystem
         p.Entity.WatchedAttributes.RemoveAttribute(CureDosesKey);
         p.Entity.WatchedAttributes.RemoveAttribute(CureLastDoseDayKey);
         p.Entity.WatchedAttributes.RemoveAttribute(CureFirstDoseDayKey);
+        ClearInfectionDisplay(p.Entity);
         p.Entity.WatchedAttributes.RemoveAttribute(QuietBandageKey);
 
         if (!pendingDeathAlphas.TryGetValue(p.PlayerUID, out var pending)) return;

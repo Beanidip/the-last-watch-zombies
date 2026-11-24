@@ -19,6 +19,36 @@ public static class StabilityRegression
         BaitGiveUp(check);
         BuildingRecords(check);
         IndustryScan(check);
+        TraitText(check);
+    }
+
+    static void TraitText(Action<bool, string> check)
+    {
+        string T(string key, object[] args) => key.Replace("seventhnightzombies:", "") + (args.Length > 0 ? "[" + string.Join("|", args) + "]" : "");
+        var w = new Vintagestory.API.Datastructures.TreeAttribute();
+        check(InfectionTrait.Describe(w, 0, T) == null, "healthy player has no infection trait");
+        w.SetDouble(SeventhNightSystem.InfectionKey, 0);
+        w.SetDouble(InfectionTrait.FatalDayKey, 7);
+        w.SetDouble(InfectionTrait.CureStartByDayKey, 2);
+        w.SetInt(InfectionTrait.DosesRequiredKey, 6);
+        string untreated = InfectionTrait.Describe(w, 0.5, T);
+        check(untreated.Contains("trait-infected") && untreated.Contains("traitdesc-infected-untreated[1d 12h]") &&
+              untreated.Contains("traitdesc-infected-fatal[6d 12h]"), "untreated trait shows start window and fatal countdown");
+        check(InfectionTrait.Describe(w, 2.5, T).Contains("traitdesc-infected-toolate"), "after the window the trait says too late");
+        w.SetInt(SeventhNightSystem.CureDosesKey, 2);
+        w.SetDouble(InfectionTrait.NextDoseDayKey, 3.25);
+        w.SetDouble(InfectionTrait.FatalDayKey, 7.5);
+        string treated = InfectionTrait.Describe(w, 3, T);
+        check(treated.Contains("traitdesc-infected-treated[2|6|traitdesc-infected-dose-in[6h 0m]]") &&
+              treated.Contains("traitdesc-infected-fatal[4d 12h]"), "treated trait shows doses and next dose");
+        check(InfectionTrait.Describe(w, 3.3, T).Contains("traitdesc-infected-dose-ready"), "due dose shows ready");
+        w.SetDouble(InfectionTrait.FatalDayKey, -1);
+        check(InfectionTrait.Describe(w, 3.3, T).Contains("traitdesc-infected-notfatal"), "fatality disabled is shown");
+        var hookTarget = HarmonyLib.AccessTools.Method(typeof(Vintagestory.GameContent.CharacterSystem), "getClassTraitText");
+        check(hookTarget != null && hookTarget.ReturnType == typeof(string) && hookTarget.GetParameters().Length == 0,
+              "VS 1.22.7 still has CharacterSystem.getClassTraitText() for the Traits-tab hook");
+        check(InfectionTrait.Until(0) == "0m" && InfectionTrait.Until(1.0 / 1440 * 75) == "1h 15m" && InfectionTrait.Until(2.5) == "2d 12h",
+              "compact durations");
     }
 
     static void CureWindow(Action<bool, string> check)

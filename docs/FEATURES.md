@@ -92,8 +92,11 @@ Radius-based wake mode: **inert**.
 
 Crafting chain: 4 rot → **Rot Concentrate** (cooking pot); concentrate + a
 poisonous mushroom (bitterbolete, deathcap, devilbolete, devilstooth, …) →
-**Mycobiotic** (cooking); Mycobiotic + clean bandage (grid) → **Mycobiotic
-Cure**. Right-click the cure to take a dose.
+**Mycobiotic** (cooking); Mycobiotic + a clean bandage **or** a horsetail
+poultice (reed or linen) (grid) → **Mycobiotic Cure**. Right-click the cure to
+take a dose. Since 2.0.10 an infected player sees a **Zombie infection** line
+in the character dialog's Traits tab (start-window or next-dose time and fatal
+countdown, published by the server).
 
 ## Siege and block destruction
 

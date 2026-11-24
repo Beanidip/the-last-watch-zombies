@@ -18,6 +18,13 @@ Gameplay
   always completes. New player attribute `seventhnight-first-cure-dose-day`
   (estimated for saves from 2.0.9). `/zombieinfection` shows the start window.
   `/zombieconfig curestartwindow`. (#6)
+- Mycobiotic Cure can also be crafted with a horsetail poultice (reed or
+  linen, `game:poultice-*-horsetail`) instead of a clean bandage.
+- Infection now appears in the character dialog's **Traits** tab ("Zombie
+  infection": start window or treatment progress, next dose, fatal countdown).
+  Harmony postfix on `CharacterSystem.getClassTraitText`; the server publishes
+  deadlines in watched attributes `seventhnight-infection-fatal-day`,
+  `-cure-start-by-day`, `-cure-next-dose-day`, `-cure-doses-required`.
 
 Fixes
 - Stronghold/bell/bonfire records are validated against the world and blocks
@@ -42,8 +49,9 @@ Cleanup (#10)
   routines (old values are ignored and dropped on the next config rewrite).
 - `DEFAULT-*.json`, `CONFIG-REFERENCE.md`, `docs/CONFIGURATION.md` regenerated
   from source by `scripts/refresh-config-files.sh`; CI fails on drift.
-- 50 new regression assertions (`tests/StabilityRegression.cs`,
-  `VariantRegression.RunStability`); 1875 total.
+- 60 new regression assertions (`tests/StabilityRegression.cs`,
+  `VariantRegression.RunStability`); 1885 total. `validate-assets.py` checks
+  the cure recipe accepts both binders.
 
 Not verified in a running game or dedicated server.
 

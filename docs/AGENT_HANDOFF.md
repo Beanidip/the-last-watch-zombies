@@ -15,9 +15,9 @@
 | Current development branch | `fix/2.0.10-stability` (gameplay fixes). Use `feature/<topic>` or `fix/<issue#>-<slug>` branches for code changes |
 | Pristine baseline | commit `b1f4675` on branch **`baseline/v2.0.9`** (never move/rebase it). Tree is byte-identical to `TheLastWatchZombies_Source_v2.0.9_Stable.zip` (SHA-256 `8c43186eb50a11f65ef7620f56a744259054bef74c7e51f985b5facc5b6ad062`). Parent `11b5b30` is the owner's GitHub "Initial commit" (LICENSE only) |
 | Tag `v2.0.9` | **Not on GitHub yet.** The cloud agent session's proxy blocks tag pushes. Owner: run the command below once |
-| Last completed task | 2.0.10 stability fixes: rusty-gear loot, 2-day cure start window, #3, #5/#9 perf, #7, #10, #12 |
+| Last completed task | Horsetail poultice as alternative cure binder; infection shown in the Traits tab (on top of the 2.0.10 stability fixes) |
 | Build status | ✅ Release build 0 warnings / 0 errors (local Linux + GitHub Actions) |
-| Test status | ✅ 1875/1875 regression assertions locally on 2.0.10 (CI result: see the branch's latest Actions run). ❌ no dedicated-server or in-game test performed by agents yet |
+| Test status | ✅ 1885/1885 regression assertions locally on 2.0.10. Owner reported the first 2.0.10 build working in game (CI result: see the branch's latest Actions run). ❌ no dedicated-server or in-game test performed by agents yet |
 | Open known issues | `docs/KNOWN_ISSUES.md`: 8 fixed in 2.0.10 (code + tests), 8 open (#1 smoke test, #2/#8 zombieween cure loss, #11 horde restart, #12-scale growth, #13 late-join horde, …) |
 | Immediate next steps | Owner review/merge of `fix/2.0.10-stability`; dedicated-server smoke test (#1); in-game run of TESTING §4 F/G/H; then #11 horde persistence and #8 zombieween cure loss |
 | Issue backlog | #1 build smoke test · #2 population tests · #3 migration tests + vacuous check · #4 spawning verification · #5 AI perf · #6 infection/cure feasibility · #7 siege/ghost strongholds · #8 zombieween cure loss/growth · #9 stress tests · #10 docs/config review · #11 horde restart · #12 unreachable bait · #13 late-join horde (design) |
@@ -93,6 +93,16 @@ python3 scripts/gen-config-doc.py config-dump > docs/CONFIGURATION.md
 ```
 
 ## Dev log (newest first)
+
+### 2026-11-24 — cure recipe + Traits tab (Claude Code, cloud)
+- Owner confirmed the 2.0.10 build works in game; asked for the horsetail
+  poultice as a cure ingredient and infection under Traits.
+- Recipe file is now an array: bandage-clean OR `game:poultice-*-horsetail`
+  (reed + linen; honey-sulfur excluded). `validate-assets.py` asserts it.
+- Vanilla Traits tab (`CharacterSystem.getClassTraitText`) only lists class
+  traits — `extraTraits` would NOT show — so a Harmony postfix appends a line.
+  Server publishes deadlines via `SyncInfectionDisplay` (writes only on change).
+- Tests 1885/1885. Not yet seen in game.
 
 ### 2026-11-24 — 2.0.10 stability session (Claude Code, cloud)
 - Owner requested: rusty gears instead of raw hide; 2 days to start the cure;

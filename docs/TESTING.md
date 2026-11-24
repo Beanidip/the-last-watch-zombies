@@ -66,6 +66,7 @@ harness.
 | 2026-11-24 | `b1f4675` (v2.0.9 baseline) | ✅ 0 warnings / 0 errors (.NET 10.0.115, Linux, VS 1.22.7 server assemblies) | ✅ 1825/1825 | Local, this audit |
 | 2026-11-24 | `808aa6a` | ✅ | ✅ 1825/1825 | GitHub Actions run 1 (first valid workflow) |
 | 2026-11-24 | — | — | — | Dedicated-server load test **not run** (blocked in the audit environment) |
+| 2026-11-24 | `fix/2.0.10-stability` + poultice recipe & Traits tab | ✅ 0 warnings / 0 errors | ✅ 1885/1885 | Local. Harmony target signature asserted against 1.22.7. Owner confirmed the earlier 2.0.10 build works in game (screenshot); Traits tab and poultice recipe not yet seen in game |
 | 2026-11-24 | `fix/2.0.10-stability` (2.0.10) | ✅ 0 warnings / 0 errors | ✅ 1875/1875 | Local. All 49 repo JSON files parse; config artifacts match source (drift 0); new tests mutation-checked (re-adding the hide drop / disabling stronghold validation makes them fail). No in-game test |
 
 Never record a test as passed unless it was executed. Append rows here.
@@ -120,6 +121,8 @@ excerpts and `/lastwatch` output for each row.
 5. Leave untreated 7 in-game days → death ("turned" announcement); respawn clears infection.
 6. Try the first dose at 2.1 days → refused, item kept, `/zombieinfection` says too late. First dose at 1.9 days, then daily → cured on day ~6.9 without dying.
 7. Corpse loot: 3 rot, 2 bones, 1 rusty gear (no hide).
+8. Craft the cure with Mycobiotic + clean bandage, and with Mycobiotic + horsetail poultice (reed and linen); honey-sulfur poultice must not work.
+9. While infected, open the character dialog → Traits: a red "Zombie infection" line with start window / doses / next dose / fatal countdown; it disappears after the cure or respawn. Check on a remote client (not only single-player).
 7. Relog while infected → state persists; P2 sees no desync.
 
 ### G. Siege, strongholds and claims
