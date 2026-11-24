@@ -25,18 +25,6 @@ public class Config
     public double PursuitSteerIntervalSeconds = 0.55;
     public double PursuitDirectWalkRangeBlocks = 10;
     public double PursuitRepathTargetMovementBlocks = 1.5;
-    public int PursuitResponsivenessVersion = 0;
-    public bool UpgradePursuitResponsivenessDefaults()
-    {
-        if (PursuitResponsivenessVersion >= 1) return false;
-        bool changed = false;
-        if (Math.Abs(AiPreyScanIntervalSeconds - 2) < .0001)
-        { AiPreyScanIntervalSeconds = .85; changed = true; }
-        if (Math.Abs(SiegeNavigationRefreshSeconds - 5) < .0001)
-        { SiegeNavigationRefreshSeconds = 2; changed = true; }
-        PursuitResponsivenessVersion = 1;
-        return changed;
-    }
     // Time spent without valid prey before using the engine's expiry pipeline.
     // One scalar per loaded zombie; no global live-entity ledger.
     public double ZombieIdleDespawnSeconds = 300;
@@ -69,58 +57,16 @@ public class Config
     // Base-only scheduled horde clock, independent of Last Watch migration.
     public double HordeStartHour = 18;
     public double HordeMinutesBeforeStartHour = 5;
-    // Start the scheduled seventh-night horde five in-game minutes BEFORE the
-    // sunset migration roll. Manual hordes still start immediately.
-    public double HordeLeadMinutesBeforeMigration = 5;
+    // The scheduled seventh-night horde starts HordeMinutesBeforeStartHour
+    // BEFORE the sunset migration roll. Manual hordes start immediately.
     // Ordinary migrations move one zone; only an ACTIVE horde at sunset may
     // take a second adjacent step toward the chosen attraction source.
     public int HordeMigrationMaxZoneSteps = 2;
-    // One-time upgrade of the old horde spawn defaults saved outside the world.
-    public int HordeSpawnAlignmentVersion = 0;
-    public bool UpgradeHordeSpawnAlignmentDefaults()
-    {
-        if (HordeSpawnAlignmentVersion >= 1) return false;
-        bool changed = false;
-        if (HordeSpawnIgnoreLightLevel) { HordeSpawnIgnoreLightLevel = false; changed = true; }
-        if (HordeSpawnsInClaims) { HordeSpawnsInClaims = false; changed = true; }
-        if (ManualHordeMinDistance == 10) { ManualHordeMinDistance = 20; changed = true; }
-        if (ManualHordeMaxDistance == 26) { ManualHordeMaxDistance = 48; changed = true; }
-        HordeSpawnAlignmentVersion = 1;
-        return changed;
-    }
-    public long ZoneSettlementThresholdChanges = 500;
-    public int ZoneSettlementAttractionRadiusZones = 4;
-    public int ZoneBlockChangeAttractionRadiusZones = 2;
-    public int ZonePlayerDeathAttractionRadiusZones = 2;
-    public int ZoneStrongholdAttractionRadiusZones = 3;
-    public int ZoneHotspotAttractionRadiusZones = 3;
-    public int ZoneStonePathAttractionRadiusZones = 1;
-    public int ZonePlayerPresenceAttractionRadiusZones = 6;
-    public int ZoneHighAttractionRadiusZones = 10;
-    // Base chance to wander randomly without any attractive destination: 2% per day.
-    // With attractive destinations, only 5% of the old background direction weight remains.
-    public double ZoneRandomDirectionWeightMultiplier = 0.05;
     public double ZonePlayerPresenceBonus = 0.10;
-    public double ZoneFuneralMaskPresenceReduction = 0.15;
-    // A target's combined attraction bonus above 70%, including bonfire plus
-    // activity, extends it to ten zones. Bonfire-only remains at its own ring.
-    public double ZoneHighAttractionThreshold = 0.70;
     public double ZoneSettlementBonus = 0.30;
+    // Base chance (per dormant zombie per sunset) to drift without any attraction.
     public double ZoneBaseDailyMigrationChance = 0.02;
-    // Migrate the previous shipped defaults in an existing global ModConfig.
-    // Fresh worlds don't automatically replace that file.
-    public int LastWatchMigrationTuningVersion = 0;
-    public bool UpgradeLastWatchMigrationDefaults()
-    {
-        if (LastWatchMigrationTuningVersion >= 1) return false;
-        bool changed = false;
-        if (ZoneSettlementAttractionRadiusZones == 8)
-        { ZoneSettlementAttractionRadiusZones = 4; changed = true; }
-        if (Math.Abs(ZoneBaseDailyMigrationChance - 0.08) < 0.00001)
-        { ZoneBaseDailyMigrationChance = 0.02; changed = true; }
-        LastWatchMigrationTuningVersion = 1;
-        return changed;
-    }
+    // Retired (see StandaloneConfigStorage.RetiredKeys): accepted on read only.
     public double ZoneChangesBonusPerBlock = 0.006;
     public double ZoneStonePathBonusPerBlock = 0.002;
     public double ZoneDeathBonusPerDeath = 0.075;
@@ -130,9 +76,6 @@ public class Config
     public int ZoneHotspotBlocksChanged = 50;
     public int ZoneAttractionMinBlocksChanged = 10;
     public int ZoneMaxPathsCounted = 300;
-    // Legacy setting retained for compatibility; new copper/iron tiers are
-    // fixed at 50/300 reinforcement respectively.
-    public int ZoneStrongholdReinforcement = 50;
     public bool ZoneMigrationChatAnnouncement = true;
     public int ZoneBellRangeZones = 1;
     public bool LastWatchVerboseLogging = false;
@@ -151,14 +94,13 @@ public class Config
     public int ZoneFarmAnimalThreshold = 10;
     public double ZoneFarmAnimalAttractionBonus = 0.12;
     public int ZoneTraderDormantSeed = 10;
-    // Once-daily loaded near-surface search, only in stronghold and player zones.
+    // Once-daily search of loaded block entities (forge, anvil, charcoal pit)
+    // near the surface, only in stronghold and Survival-player zones.
     public int ZoneIndustrySurfaceBelowBlocks = 8;
     public int ZoneIndustrySurfaceAboveBlocks = 24;
     public int ZoneBellOverrunThreshold = 30;
 
-
-    // HitsToInfect kept for old configs; variant-specific thresholds take precedence.
-    public int HitsToInfect = 3;
+    // Damaging hits within HitWindowSeconds needed to infect, per attacker type.
     public int NormalHitsToInfect = 4;
     public int AlphaHitsToInfect = 2;
     public double HitWindowSeconds = 60;
@@ -171,41 +113,24 @@ public class Config
     public double InfectionFatalDays = 7;
     public int CureDosesRequired = 6;
     public double CureDoseIntervalDays = 1;
+    // The first dose must be taken within this many in-game days of infection.
+    // A course started in time can always be finished: while treated, the
+    // fatal deadline extends to firstDose + CureDosesRequired x interval.
+    public double CureStartWindowDays = 2;
     // Taking the first valid dose doubles the time between poison ticks.
     public double TreatedInfectionTickSeconds = 20;
     // Accepted cure doses progress in order through six mushroom-effect
     // strengths, from weakest at dose one to strongest at the sixth dose.
     // Purely visual: does not add mushroom food, poison, or saturation effects.
     public bool CurePsychedelicEnabled = true;
-    // v1.5.17/18 temporarily disabled the effect. Re-enable that old default
-    // exactly once for existing configs; subsequent manual changes remain respected.
-    public int CurePsychedelicConfigVersion = 0;
-    public bool UpgradeCurePsychedelicDefault()
-    {
-        if (CurePsychedelicConfigVersion >= 1) return false;
-        bool changed = !CurePsychedelicEnabled;
-        CurePsychedelicEnabled = true;
-        CurePsychedelicConfigVersion = 1;
-        return changed;
-    }
-    // Upgrade marker: migrate v1.1.0's inactive five-day value and three-dose default.
-    public int CureBalanceConfigVersion = 0;
-
-    public bool UpgradeLegacyCureDefaults()
-    {
-        if (CureBalanceConfigVersion >= 1) return false;
-        bool changed = false;
-        if (CureDosesRequired == 3) { CureDosesRequired = 6; changed = true; }
-        if (InfectionFatalDays == 5) { InfectionFatalDays = 7; changed = true; }
-        CureBalanceConfigVersion = 1;
-        return changed;
-    }
     public int[] QuietEyeBandageItemIds = [3889, 3890];
     // Corpse lifetime is in real seconds while the corpse chunk is loaded.
     public double CorpseDelaySeconds = 30;
     public int CorpseRot = 3;
     public int CorpseBones = 2;
-    public int CorpseSmallHides = 1;
+    // Rusty gears replaced small raw hides in 2.0.10. A saved CorpseSmallHides
+    // value is carried over once by StandaloneConfigStorage.Load.
+    public int CorpseRustyGears = 1;
     // Exactly one of the eight vanilla funeral masks has a 10% chance to drop
     // when an Alpha Zombie's corpse poofs and its normal loot is spawned.
     public int AlphaFuneralMaskChanceDenominator = 10;
@@ -221,18 +146,6 @@ public class Config
     public float RotTunicFirstWearDamage = 3f;
     // Rot tunic loses one durability per real-time second WHILE EQUIPPED.
     public double RotTunicDrainSeconds = 1;
-    // One-time upgrade from 1.2.3 default settings, preserving custom values.
-    public int MaskBalanceConfigVersion = 0;
-
-    public bool UpgradeLegacyMaskDefaults()
-    {
-        if (MaskBalanceConfigVersion >= 1) return false;
-        bool changed = false;
-        if (FuneralMask1Durability == 500) { FuneralMask1Durability = 200; changed = true; }
-        if (MaskDrainSeconds == 5) { MaskDrainSeconds = 1; changed = true; }
-        MaskBalanceConfigVersion = 1;
-        return changed;
-    }
     public static readonly string[] DefaultAlphaFuneralMaskItemCodes =
     [
         "game:clothes-face-funeralmask1",
@@ -289,23 +202,9 @@ public class Config
     public bool HordeSpawnIgnoreLightLevel = false;
     // Death-created Alphas obey automatic nighttime and ambient light rules.
     // The horde light override affects explicit horde waves, not death Alphas.
-    // One-time upgrade marker for saved pre-0.2.7 configs (do not reset manually).
-    // A previous default of 3 is upgraded to 7 once; later custom values are respected.
-    public int SpawnLightConfigVersion = 0;
-
-    public bool UpgradeLegacySpawnLightDefault()
-    {
-        if (SpawnLightConfigVersion >= 1) return false;
-        bool changed = SpawnMaxLightLevel == 3;
-        if (changed) SpawnMaxLightLevel = 12;
-        SpawnLightConfigVersion = 1;
-        return changed;
-    }
-    // Old view-check settings were removed in v0.2.13. Zombies can spawn in view.
-    // Old saved JSON fields are ignored and disappear on config rewrite.
     // Horde mobs may appear inside land claims; claims STILL protect player blocks.
     public bool HordeSpawnsInClaims = false;
-    // The player the spawn is centered on uses SpawnMinDistance or ManualHordeMinDistance.
+    // The player the spawn is centered on uses SpawnMinDistance.
     // Other players need only this smaller safety distance; groups won't block every candidate.
     public int SpawnMinimumOtherPlayerDistance = 12;
     // Optional once-per-minute server log when a night spawn attempt finds no candidates.
@@ -315,40 +214,12 @@ public class Config
     // wake rules stay separate; no cave spawning in the ambient pathway.
     public bool AmbientSpawnSurfaceOnly = true;
     public int SpawnSurfaceVerticalTolerance = 5;
-    public int ZoneActivitySurfaceBelowBlocks = 24;
-    public int ZoneActivitySurfaceAboveBlocks = 48;
-    public int SpawnPerformanceTuningVersion = 0;
-    public bool UpgradeSpawnPerformanceDefaults()
-    {
-        if (SpawnPerformanceTuningVersion >= 1) return false;
-        bool changed = false;
-        if (!AmbientSpawnRequiresNight) { AmbientSpawnRequiresNight = true; changed = true; }
-        if (SpawnPositionAttempts == 64) { SpawnPositionAttempts = 40; changed = true; }
-        if (Math.Abs(SiegeNavigationRefreshSeconds - 2.0) < .0001)
-            { SiegeNavigationRefreshSeconds = 5; changed = true; }
-        SpawnPerformanceTuningVersion = 1;
-        return changed;
-    }
     // Death alpha is delayed and placed at a safe distance, never on the corpse/camera.
     public bool SpawnAlphaOnPlayerDeath = true;
     public int AlphaDeathSpawnDelayMilliseconds = 1200;
     // One-time tuning migration when an existing ModConfig predates v1.5.15.
-    public int SpawnDistanceTuningVersion = 1;
-    public bool UpgradeSpawnDistanceDefaults()
-    {
-        if (SpawnDistanceTuningVersion >= 1) return false;
-        bool changed = false;
-        if (SpawnMinDistance == 24 && SpawnMaxDistance == 48) { SpawnMinDistance = 20; changed = true; }
-        if (SpawnMinimumOtherPlayerDistance == 6) { SpawnMinimumOtherPlayerDistance = 20; changed = true; }
-        if (DetectionRange == 40) { DetectionRange = 32; changed = true; }
-        if (AlphaDetectionRangeBonus == 20) { AlphaDetectionRangeBonus = 32; changed = true; }
-        if (AlphaFollowRange == 60) { AlphaFollowRange = 32; changed = true; }
-        SpawnDistanceTuningVersion = 1;
-        return changed;
-    }
     public float ManualHordeSoundRange = 38;
     public int ManualHordeMoans = 3;
-    public float ManualHordeZombieDetectionRadius = 50;
     public string[] EyeBandageCodeFragments = ["eyepatch", "eye-patch", "eye-bandage", "eyebandage", "eyeband", "bandage-eye", "patch-eye", "eyecover", "eye-cover"];
     public string[] EyeBandageInventoryClasses = ["character", "accessory", "equipment", "wearable"];
     public double NightStartsAtHour = 18;
@@ -383,15 +254,10 @@ public class Config
     public float AlphaFollowPlayerBreakChance = 0.75f;
     public float NpcPlayerRetargetChance = .25f;
     public double NpcPlayerRetargetIntervalSeconds = 5;
-    // Legacy multiplier retained only for backward-compatible config loading.
-    // Dormant wake-ups now use an exact horizontal chunk radius, not sight range.
+    // Retired (accepted on read only).
     public double DormantWakeRangeMultiplier = 2;
-    public int DormantWakeRadiusChunks = 5;
-    // Normal gameplay now wakes dormant zombies only when a survival player
-    // enters the same 3x3-chunk Last Watch zone. Set false to restore the
-    // legacy 5-chunk wake radius without changing stored populations.
-    public bool DormantWakeOnlyInSameZone = true;
-    public bool DormantDebugLogging = false;
+    // Dormant zombies wake only in the 3x3-chunk zone a Survival player occupies,
+    // after that zone's new-ambient allowance is spent.
     // Optional successful wake-up ceiling per zone per sunset cycle.
     // Zero means UNLIMITED: wake all stored zombies over multiple small batches.
     // Positive values restore a strict per-zone daily reactivation limit.
@@ -402,7 +268,6 @@ public class Config
     public double DormantWakeIntervalSeconds = 5;
     // Limit total reactivations across all occupied zones on one server pass.
     public int DormantMaxTotalWakesPerPass = 8;
-    public int DormantMaxChunkAttemptsPerCheck = 16;
     public int SpawnMinDistance = 20;
     public int SpawnMaxDistance = 48;
     // Sneaking affects target acquisition (not ambient spawn rates) on the server.
@@ -410,7 +275,6 @@ public class Config
     // acquisition chance per scan. At <= 4 blocks, stealth cannot conceal them.
     public float SneakDetectionRangeMultiplier = 0.40f;
     public float SneakAcquireChance = 0.25f;
-    public float SneakLoseTargetChance = 0.35f;
     public float SneakAlwaysDetectedDistance = 4f;
     // Target-list entries are full entity codes or trailing-* prefixes. For example:
     //   "game:wolf-*", "game:humanoid-trader-*", "someaddon:bandit-*".
@@ -436,7 +300,6 @@ public class Config
     // Legacy: the simplified idle AI follows its last prey heading directly.
     // Walk on in the last OBSERVED direction before seeking a new target.
     // Set seconds to 0 to disable the follow-through behavior.
-    public int LostSearchTimingConfigVersion = 0;
     public double LostTargetFollowThroughSeconds = 5;
     public double LostTargetTurnSeconds = 5;
     public double LostTargetTurnAngleDegrees = 25;
@@ -444,17 +307,6 @@ public class Config
     public float AttackDamage = 2;
     public float AttackCooldownSeconds = 2.5f;
     // Siege: normal routes first. Only attack nearby barriers after progress stalls.
-    // Migration marker to keep the old 5s/20% settings from hiding the new
-    // siege strike defaults on existing servers. Custom rates are preserved.
-    public int SiegeBalanceConfigVersion = 0;
-    public bool UpgradeLegacySiegeDefaults()
-    {
-        if (SiegeBalanceConfigVersion >= 1) return false;
-        bool migrated = BlockBreakIntervalSeconds == 5 && Math.Abs(BlockBreakChance - .2f) < .00001f;
-        if (migrated) { BlockBreakIntervalSeconds = 2.5; BlockBreakChance = .65f; }
-        SiegeBalanceConfigVersion = 1;
-        return migrated;
-    }
     public bool SiegeEnabled = true;
     public double SiegeProgressSampleSeconds = 2.5;
     public double SiegeStuckSeconds = 5.0;
@@ -507,25 +359,10 @@ public class Config
         PursuitSteerIntervalSeconds = Finite(PursuitSteerIntervalSeconds, .55, .25, 3);
         PursuitDirectWalkRangeBlocks = Finite(PursuitDirectWalkRangeBlocks, 10, 3, 20);
         PursuitRepathTargetMovementBlocks = Finite(PursuitRepathTargetMovementBlocks, 1.5, .5, 10);
-        PursuitResponsivenessVersion = Math.Clamp(PursuitResponsivenessVersion, 0, 1);
-
         ZoneMigrationHour = Finite(ZoneMigrationHour, 18, 0, 23.99);
         HordeStartHour = Finite(HordeStartHour, 18, 0, 23.99);
         HordeMinutesBeforeStartHour = Finite(HordeMinutesBeforeStartHour, 5, 0, 120);
-        LastWatchMigrationTuningVersion = Math.Clamp(LastWatchMigrationTuningVersion, 0, 1);
-        ZoneSettlementThresholdChanges = Math.Clamp(ZoneSettlementThresholdChanges, 1L, 100000000L);
-        ZoneSettlementAttractionRadiusZones = Math.Clamp(ZoneSettlementAttractionRadiusZones, 1, 32);
-        ZoneBlockChangeAttractionRadiusZones = Math.Clamp(ZoneBlockChangeAttractionRadiusZones, 1, 32);
-        ZonePlayerDeathAttractionRadiusZones = Math.Clamp(ZonePlayerDeathAttractionRadiusZones, 1, 32);
-        ZoneStrongholdAttractionRadiusZones = Math.Clamp(ZoneStrongholdAttractionRadiusZones, 1, 32);
-        ZoneHotspotAttractionRadiusZones = Math.Clamp(ZoneHotspotAttractionRadiusZones, 1, 32);
-        ZoneStonePathAttractionRadiusZones = Math.Clamp(ZoneStonePathAttractionRadiusZones, 1, 32);
-        ZonePlayerPresenceAttractionRadiusZones = Math.Clamp(ZonePlayerPresenceAttractionRadiusZones, 1, 32);
-        ZoneHighAttractionRadiusZones = Math.Clamp(ZoneHighAttractionRadiusZones, 1, 32);
-        ZoneRandomDirectionWeightMultiplier = Finite(ZoneRandomDirectionWeightMultiplier, .05, 0, 1);
         ZonePlayerPresenceBonus = Finite(ZonePlayerPresenceBonus, .10, 0, 1);
-        ZoneFuneralMaskPresenceReduction = Finite(ZoneFuneralMaskPresenceReduction, .15, 0, 1);
-        ZoneHighAttractionThreshold = Finite(ZoneHighAttractionThreshold, .70, 0, 1);
         ZoneAttractionTier4Threshold = Finite(ZoneAttractionTier4Threshold, .20, .01, 1);
         ZoneAttractionTier6Threshold = Finite(ZoneAttractionTier6Threshold, .40, ZoneAttractionTier4Threshold, 2);
         ZoneAttractionTier8Threshold = Finite(ZoneAttractionTier8Threshold, .65, ZoneAttractionTier6Threshold, 3);
@@ -543,19 +380,17 @@ public class Config
         ZoneBellOverrunThreshold = Math.Clamp(ZoneBellOverrunThreshold, 0, 10000);
         ZoneSettlementBonus = Finite(ZoneSettlementBonus,0.30,0,1);
         ZoneBonfireAttractionBonus = Finite(ZoneBonfireAttractionBonus,0.70,0,1);
-        ZoneBaseDailyMigrationChance = Finite(ZoneBaseDailyMigrationChance,0.08,0,1);
+        ZoneBaseDailyMigrationChance = Finite(ZoneBaseDailyMigrationChance,0.02,0,1);
         ZoneChangesBonusPerBlock = Finite(ZoneChangesBonusPerBlock,0.006,0,1);
         ZoneStonePathBonusPerBlock = Finite(ZoneStonePathBonusPerBlock,0.002,0,1);
         ZoneDeathBonusPerDeath = Finite(ZoneDeathBonusPerDeath,0.075,0,1);
-        ZoneStrongholdBonus = Finite(ZoneStrongholdBonus,0.20,0,1);
+        ZoneStrongholdBonus = Finite(ZoneStrongholdBonus,0.40,0,1);
         ZoneHotspotBonus = Finite(ZoneHotspotBonus,0.15,0,1);
         ZoneMaxDailyMigrationChance = Finite(ZoneMaxDailyMigrationChance,0.85,0,1);
         ZoneHotspotBlocksChanged = Math.Clamp(ZoneHotspotBlocksChanged,10,10000);
         ZoneAttractionMinBlocksChanged = Math.Clamp(ZoneAttractionMinBlocksChanged,1,ZoneHotspotBlocksChanged);
         ZoneMaxPathsCounted = Math.Clamp(ZoneMaxPathsCounted,1,100000);
-        ZoneStrongholdReinforcement = Math.Clamp(ZoneStrongholdReinforcement,1,10000);
         ZoneBellRangeZones = Math.Clamp(ZoneBellRangeZones,0,10);
-        HitsToInfect = Math.Clamp(HitsToInfect, 1, 100);
         NormalHitsToInfect = Math.Clamp(NormalHitsToInfect, 1, 100);
         AlphaHitsToInfect = Math.Clamp(AlphaHitsToInfect, 1, 100);
         HitWindowSeconds = Finite(HitWindowSeconds, 60, 1, 3600);
@@ -563,30 +398,26 @@ public class Config
         TreatedInfectionTickSeconds = Finite(TreatedInfectionTickSeconds, 20, InfectionTickSeconds, 180);
         InfectionDamagePerTick = (float)Finite(InfectionDamagePerTick, 0.2, 0, 50);
         InfectionFatalDays = Finite(InfectionFatalDays, 7, 1, 365);
-        CurePsychedelicConfigVersion = Math.Clamp(CurePsychedelicConfigVersion, 0, 1);
-        CureBalanceConfigVersion = Math.Clamp(CureBalanceConfigVersion, 0, 1);
         CureDosesRequired = Math.Clamp(CureDosesRequired, 1, 10);
         CureDoseIntervalDays = Finite(CureDoseIntervalDays, 1, 0.05, 30);
+        CureStartWindowDays = Finite(CureStartWindowDays, 2, 0.05, InfectionFatalDays);
         QuietEyeBandageItemIds ??= [3889, 3890];
         CorpseDelaySeconds = Finite(CorpseDelaySeconds, 30, 1, 3600);
         CorpseRot = Math.Clamp(CorpseRot, 0, 64);
         CorpseBones = Math.Clamp(CorpseBones, 0, 64);
-        CorpseSmallHides = Math.Clamp(CorpseSmallHides, 0, 64);
+        CorpseRustyGears = Math.Clamp(CorpseRustyGears, 0, 64);
         AlphaFuneralMaskChanceDenominator = Math.Clamp(AlphaFuneralMaskChanceDenominator, 1, 10000);
         FuneralMask1Durability = Math.Clamp(FuneralMask1Durability, 1, 20000);
         OtherFuneralMaskDurability = Math.Clamp(OtherFuneralMaskDurability, 1, 20000);
         MaskDrainSeconds = Finite(MaskDrainSeconds, 1, 1, 600);
         RotTunicFirstWearDamage = (float)Finite(RotTunicFirstWearDamage, 3, 0, 20);
         RotTunicDrainSeconds = Finite(RotTunicDrainSeconds, 1, 0.1, 600);
-        MaskBalanceConfigVersion = Math.Clamp(MaskBalanceConfigVersion, 0, 1);
         AlphaFuneralMaskItemCodes ??= (string[])DefaultAlphaFuneralMaskItemCodes.Clone();
         AlphaSpeedMultiplier = (float)Finite(AlphaSpeedMultiplier, 1.65, 1.01, 5);
         AlphaAttackDamageMultiplier = (float)Finite(AlphaAttackDamageMultiplier, 1.25, 1, 5);
         MaxActiveZombies = Math.Clamp(MaxActiveZombies, 0, 100000);
         HordeEveryDays = Math.Clamp(HordeEveryDays, 1, 365);
-        HordeLeadMinutesBeforeMigration = Finite(HordeLeadMinutesBeforeMigration, 5, 0, 120);
         HordeMigrationMaxZoneSteps = Math.Clamp(HordeMigrationMaxZoneSteps, 1, 2);
-        HordeSpawnAlignmentVersion = Math.Clamp(HordeSpawnAlignmentVersion, 0, 1);
         HordeDurationSeconds = Finite(HordeDurationSeconds, 600, 10, 3600);
         HordeWaveIntervalSeconds = Finite(HordeWaveIntervalSeconds, 180, 10, 3600);
         HordeWaveMinZombiesPerPlayer = Math.Clamp(HordeWaveMinZombiesPerPlayer, 1, 50);
@@ -600,15 +431,11 @@ public class Config
         HordeInitialRetryWindowSeconds = Finite(HordeInitialRetryWindowSeconds, 120, HordeInitialRetrySeconds, 600);
         HordeInitialRecoveryMaxDistance = Math.Clamp(HordeInitialRecoveryMaxDistance, HordeInitialFallbackMaxDistance, 192);
         SpawnMaxLightLevel = Math.Clamp(SpawnMaxLightLevel, 0, 31);
-        SpawnLightConfigVersion = Math.Clamp(SpawnLightConfigVersion, 0, 1);
         SpawnPositionAttempts = Math.Clamp(SpawnPositionAttempts, 8, 256);
         SpawnSurfaceVerticalTolerance = Math.Clamp(SpawnSurfaceVerticalTolerance, 0, 8);
-        ZoneActivitySurfaceBelowBlocks = Math.Clamp(ZoneActivitySurfaceBelowBlocks, 0, 128);
-        ZoneActivitySurfaceAboveBlocks = Math.Clamp(ZoneActivitySurfaceAboveBlocks, 0, 128);
         AlphaDeathSpawnDelayMilliseconds = Math.Clamp(AlphaDeathSpawnDelayMilliseconds, 250, 10000);
         ManualHordeSoundRange = (float)Finite(ManualHordeSoundRange, 38, 8, 128);
         ManualHordeMoans = Math.Clamp(ManualHordeMoans, 1, 8);
-        ManualHordeZombieDetectionRadius = (float)Finite(ManualHordeZombieDetectionRadius, 50, 8, 128);
         EyeBandageCodeFragments ??= [];
         EyeBandageInventoryClasses ??= [];
         NightStartsAtHour = Finite(NightStartsAtHour, 18, 12, 23.9);
@@ -631,8 +458,6 @@ public class Config
         NpcPlayerRetargetChance = (float)Finite(NpcPlayerRetargetChance, .25, 0, 1);
         NpcPlayerRetargetIntervalSeconds = Finite(NpcPlayerRetargetIntervalSeconds, 5, 1, 120);
         DormantWakeRangeMultiplier = Finite(DormantWakeRangeMultiplier, 2, 1, 8);
-        DormantWakeRadiusChunks = Math.Clamp(DormantWakeRadiusChunks, 1, 16);
-        DormantMaxChunkAttemptsPerCheck = Math.Clamp(DormantMaxChunkAttemptsPerCheck, 1, 128);
         DormantReactivationPerZonePerDay = Math.Clamp(DormantReactivationPerZonePerDay, 0, 10000);
         DormantWakeBatchSize = Math.Clamp(DormantWakeBatchSize, 1, 16);
         DormantWakeIntervalSeconds = Finite(DormantWakeIntervalSeconds, 5, 1, 60);
@@ -641,7 +466,6 @@ public class Config
         SpawnMaxDistance = Math.Clamp(SpawnMaxDistance, SpawnMinDistance + 1, 128);
         SneakDetectionRangeMultiplier = (float)Finite(SneakDetectionRangeMultiplier, .40, .05, 1);
         SneakAcquireChance = (float)Finite(SneakAcquireChance, .25, 0, 1);
-        SneakLoseTargetChance = (float)Finite(SneakLoseTargetChance, .35, 0, 1);
         SneakAlwaysDetectedDistance = (float)Finite(SneakAlwaysDetectedDistance, 4, 1, 16);
         TargetWhitelist = NormalizeTargetPatterns(TargetWhitelist);
         TargetBlacklist = NormalizeTargetPatterns(TargetBlacklist);
@@ -654,12 +478,10 @@ public class Config
         RoamSpeedMultiplier = (float)Finite(RoamSpeedMultiplier, .55, .05, 2);
         RoamShambleSideDriftBlocks = Finite(RoamShambleSideDriftBlocks, .65, 0, 2);
         RoamShambleSpeedVariation = Finite(RoamShambleSpeedVariation, .12, 0, .4);
-        LostSearchTimingConfigVersion = Math.Clamp(LostSearchTimingConfigVersion, 0, 1);
         LostTargetFollowThroughSeconds = Finite(LostTargetFollowThroughSeconds, 5, 1, 10);
         LostTargetTurnSeconds = Finite(LostTargetTurnSeconds, 5, 1, 10);
         LostTargetTurnAngleDegrees = Finite(LostTargetTurnAngleDegrees, 25, 5, 75);
         LostTargetFollowThroughDistanceBlocks = Finite(LostTargetFollowThroughDistanceBlocks, 7, 2, 18);
-        SiegeBalanceConfigVersion = Math.Clamp(SiegeBalanceConfigVersion, 0, 1);
         SiegeProgressSampleSeconds = Finite(SiegeProgressSampleSeconds, 2.5, .5, 15);
         SiegeStuckSeconds = Finite(SiegeStuckSeconds, 5, SiegeProgressSampleSeconds, 60);
         SiegeMinimumTravelBlocks = Finite(SiegeMinimumTravelBlocks, .4, .05, 5);
@@ -772,8 +594,26 @@ public static class Rules
     public static float PoisonDamage(Config c) => c.InfectionDamagePerTick;
     public static double PoisonIntervalSeconds(int dosesTaken, Config c) =>
         dosesTaken > 0 ? c.TreatedInfectionTickSeconds : c.InfectionTickSeconds;
+    // Untreated deadline only (no doses taken).
     public static bool IsFatalInfection(double infectionDay, double currentDay, Config c) =>
-        c.InfectionFatalEnabled && currentDay - infectionDay >= c.InfectionFatalDays;
+        IsFatalInfection(infectionDay, currentDay, 0, 0, c);
+    // While treated, the deadline extends so a course started inside the start
+    // window can always be completed on schedule (with one interval of slack):
+    // max(infection + InfectionFatalDays, firstDose + CureDosesRequired x interval).
+    public static double FatalDeadlineDay(double infectionDay, int dosesTaken, double firstDoseDay, Config c)
+    {
+        double deadline = infectionDay + c.InfectionFatalDays;
+        if (dosesTaken > 0)
+            deadline = Math.Max(deadline, firstDoseDay + Math.Max(1, c.CureDosesRequired) * c.CureDoseIntervalDays);
+        return deadline;
+    }
+    public static bool IsFatalInfection(double infectionDay, double currentDay, int dosesTaken, double firstDoseDay, Config c) =>
+        c.InfectionFatalEnabled && currentDay >= FatalDeadlineDay(infectionDay, dosesTaken, firstDoseDay, c);
+    // The first dose must be taken within CureStartWindowDays of infection.
+    // With fatality disabled there is no deadline, so the window does not apply
+    // (otherwise a late player would stay infected and poisoned forever).
+    public static bool CanStartCure(double infectionDay, double currentDay, Config c) =>
+        !c.InfectionFatalEnabled || currentDay - infectionDay <= c.CureStartWindowDays + 1e-7;
     public static bool MayTakeCureDose(int doses, double previousDay, double currentDay, Config c) =>
         doses <= 0 || currentDay - previousDay + 1e-7 >= c.CureDoseIntervalDays;
     // Is a sneaking player eligible to be noticed, given relative distance and a single RNG roll?
@@ -783,25 +623,15 @@ public static class Rules
         double effectiveRange = normalRange * c.SneakDetectionRangeMultiplier;
         return distanceSquared <= effectiveRange * effectiveRange && roll < c.SneakAcquireChance;
     }
-    public static bool CanRetainSneakingTarget(double distanceSquared, float normalRange, double roll, Config c)
-    {
-        if (distanceSquared <= c.SneakAlwaysDetectedDistance * c.SneakAlwaysDetectedDistance) return true;
-        double effectiveRange = normalRange * c.SneakDetectionRangeMultiplier;
-        return distanceSquared <= effectiveRange * effectiveRange && roll >= c.SneakLoseTargetChance;
-    }
     public static bool IsEyeCovering(int id, string code, Config c) =>
         c.QuietEyeBandageItemIds.Contains(id) || IsEyeBandage(code, c.EyeBandageCodeFragments);
     public static bool IsSpawnLightSafe(int light, Config c) => light <= c.SpawnMaxLightLevel;
-    public static bool ShouldDropAlphaMask(int roll) => roll == 0;
     public static bool RecordHit(Queue<double> hits, double now, int requiredHits, double windowSeconds)
     {
         while (hits.Count > 0 && now - hits.Peek() > windowSeconds) hits.Dequeue();
         hits.Enqueue(now);
         return hits.Count >= requiredHits;
     }
-    // Retain old helper for source compatibility with independent rule tests.
-    public static bool RecordHit(Queue<double> hits, double now, Config c) =>
-        RecordHit(hits, now, c.HitsToInfect, c.HitWindowSeconds);
     public static int GetInfectionHitThreshold(bool alpha, Config c) =>
         alpha ? c.AlphaHitsToInfect : c.NormalHitsToInfect;
 }

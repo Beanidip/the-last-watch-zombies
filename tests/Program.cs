@@ -157,6 +157,8 @@ Check(RotBaitRules.FoodSlot(inventory) == null && !inventory.Empty, "bait exhaus
 Check(RotBaitRules.EatIntervalMs == 2000, "shared pile eating interval is two seconds");
 StakesRegression.Run(Check);
 BonfireRegression.Run(Check);
+VariantRegression.RunStability(Check);
+StabilityRegression.Run(Check);
 Console.WriteLine($"PASS: {passed} regression assertions");
 
 public class Fake : DispatchProxy

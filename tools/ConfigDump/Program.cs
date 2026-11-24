@@ -17,6 +17,9 @@ foreach (var p in JObject.FromObject(config).Properties())
 }
 File.WriteAllText(Path.Combine(outDir, StandaloneConfigStorage.MainFile), main.ToString());
 File.WriteAllText(Path.Combine(outDir, StandaloneConfigStorage.AdvancedFile), advanced.ToString());
+// Retired keys that are no longer Config fields at all (value unknown).
+foreach (var name in StandaloneConfigStorage.RetiredKeys.Where(k => retired[k] == null).OrderBy(k => k))
+    retired[name] = JValue.CreateNull();
 File.WriteAllText(Path.Combine(outDir, "retired-keys.json"), retired.ToString());
 
 int drift = 0;
@@ -33,7 +36,8 @@ foreach (var (generated, file) in new[] { (main, StandaloneConfigStorage.MainFil
     foreach (var key in generated.Properties().Select(p => p.Name).Union(shipped.Properties().Select(p => p.Name)).OrderBy(k => k))
     {
         var a = generated[key]; var b = shipped[key];
-        if (a == null || b == null || !JToken.DeepEquals(a, b))
+        // Compare serialized text: float fields round-trip as a different token type.
+        if (a == null || b == null || a.ToString(Newtonsoft.Json.Formatting.None) != b.ToString(Newtonsoft.Json.Formatting.None))
         { Console.WriteLine($"DEFAULT-{file} drift {key}: source={a?.ToString(Newtonsoft.Json.Formatting.None) ?? "<absent>"} shipped={b?.ToString(Newtonsoft.Json.Formatting.None) ?? "<absent>"}"); drift++; }
     }
 }

@@ -136,6 +136,34 @@ public static class VariantRegression
         f.Player.Alive=false;f.Day+=2;
         check(!f.Core.TryTakeCureDose(f.Player) && f.Player.Healing==40,"dead player cannot consume cure or heal");
     }
+    // 2.0.10: cure start window and corpse rusty gears, through the real server code.
+    public static void RunStability(Action<bool,string> check)
+    {
+        var f=new Fixture(true);
+        f.Core.Settings.CurePsychedelicEnabled=false;
+        f.Player.WatchedAttributes.SetDouble(SeventhNightSystem.InfectionKey,0);
+        f.Player.WatchedAttributes.SetDouble(SeventhNightSystem.InfectionStartDayKey,0);
+        f.Day=2.01;
+        check(!f.Core.TryTakeCureDose(f.Player) && f.Player.Healing==0 &&
+            f.Player.WatchedAttributes.GetInt(SeventhNightSystem.CureDosesKey)==0,"first dose after the 2-day window is refused and not consumed");
+        f.Day=2.0;
+        check(f.Core.TryTakeCureDose(f.Player) && f.Player.WatchedAttributes.GetInt(SeventhNightSystem.CureDosesKey)==1,"first dose at exactly 2 days is accepted");
+        check(Math.Abs(f.Player.WatchedAttributes.GetDouble(SeventhNightSystem.CureFirstDoseDayKey)-2.0)<1e-9,"first dose day recorded");
+        bool allAccepted=true;
+        for(int dose=2;dose<=f.Core.Settings.CureDosesRequired;dose++)
+        {
+            f.Day=2.0+(dose-1)*f.Core.Settings.CureDoseIntervalDays;
+            allAccepted&=f.Player.Alive && f.Core.TryTakeCureDose(f.Player);
+        }
+        check(allAccepted && !f.Player.WatchedAttributes.HasAttribute(SeventhNightSystem.InfectionKey),"course started on day 2 completes on day 7 without dying");
+        check(!f.Player.WatchedAttributes.HasAttribute(SeventhNightSystem.CureFirstDoseDayKey),"cure clears the first-dose record");
+
+        var corpse=f.Zombie("zombie");
+        typeof(Zombie).GetMethod("PoofIntoDustAndDropLoot",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(corpse,null);
+        check(f.Drops.Contains(("game:gear-rusty",f.Core.Settings.CorpseRustyGears)),"corpse drops rusty gears");
+        check(!f.Drops.Any(d=>d.Code!=null && d.Code.Contains("hide")),"corpse no longer drops hide");
+        check(f.Drops.Contains(("game:rot",3)) && f.Drops.Contains(("game:bone",2)),"other corpse loot unchanged");
+    }
     sealed class SilentServerPlayer:Vintagestory.Server.ServerPlayer,IServerPlayer
     {
         public SilentServerPlayer():base(null,null){}
@@ -159,6 +187,7 @@ public static class VariantRegression
         public Dictionary<string,byte[]> Saved=new();
         public List<Action<float>> Callbacks=new();
         public List<Entity> Spawned=new();
+        public List<(string Code,int Size)> Drops=new();
         public TestPlayer Player=new(){Alive=true};
         public EntityAgent Target=new(){Alive=true};
         long nextId=1000;
@@ -194,12 +223,12 @@ public static class VariantRegression
             World=Fake.Make<IServerWorldAccessor>((m,a)=>{
                 if(m.Name=="SpawnEntity"){Spawned.Add((Entity)a[0]);return null;}
                 if(m.Name=="DespawnEntity"){Removed++;return null;}
-                if(m.Name=="SpawnItemEntity"){RotDropped+=((ItemStack)a[0]).StackSize;return null;}
+                if(m.Name=="SpawnItemEntity"){var stack=(ItemStack)a[0];RotDropped+=stack.StackSize;Drops.Add((stack.Collectible?.Code?.ToString(),stack.StackSize));return null;}
                 return m.Name switch {
                     "get_ElapsedMilliseconds"=>Now,"get_BlockAccessor"=>blocks,"get_Claims"=>claims,
                     "get_Calendar"=>calendar,"get_Rand"=>random,"get_ClassRegistry"=>registry,"get_AllOnlinePlayers"=>new[]{player},
                     "PlayerByUid"=>player,"get_LoadedEntities"=>loaded,"GetEntitiesAround"=>Array.Empty<Entity>(),
-                    "GetItem"=>new Item{Code=new AssetLocation("game:rot")},
+                    "GetItem"=>new Item{Code=(AssetLocation)a[0]},
                     "GetEntityType"=>new EntityProperties{Code=(AssetLocation)a[0]},_=>null};
             });
             Api=Fake.Make<ICoreServerAPI>((m,a)=>m.Name switch {

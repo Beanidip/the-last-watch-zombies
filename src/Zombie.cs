@@ -165,7 +165,7 @@ public partial class Zombie : EntityAgent
         }
         Drop("game:rot", C.CorpseRot);
         Drop("game:bone", C.CorpseBones);
-        Drop("game:hide-raw-small", C.CorpseSmallHides);
+        Drop("game:gear-rusty", C.CorpseRustyGears);
         if (IsAlpha)
         {
             if (World.Rand.Next(C.AlphaFuneralMaskChanceDenominator) == 0)
@@ -856,6 +856,9 @@ public partial class Zombie : EntityAgent
         }
         // Vanilla BreakBlock applies ordinary block drops/neighbor updates.
         World.BlockAccessor.BreakBlock(pos, null);
+        // No player break event fires for a zombie strike: tell the zone
+        // controller so stronghold/bell/path records do not outlive the block.
+        (system.WorldDirector as LastWatchZones)?.ForgetBlock(pos, block);
         return true;
     }
 

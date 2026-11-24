@@ -61,7 +61,9 @@ public static class AdminConfiguration
         ["bonfirebonus"] = nameof(Config.ZoneBonfireAttractionBonus),
         ["migrationannounce"] = nameof(Config.ZoneMigrationChatAnnouncement),
         ["fatality"] = nameof(Config.InfectionFatalEnabled),
-        ["fataldays"] = nameof(Config.InfectionFatalDays)
+        ["fataldays"] = nameof(Config.InfectionFatalDays),
+        ["curestartwindow"] = nameof(Config.CureStartWindowDays),
+        ["rustygears"] = nameof(Config.CorpseRustyGears)
     };
 
     public static void Register(ICoreServerAPI api, SeventhNightSystem core)

@@ -15,7 +15,6 @@ public interface IZombiePopulation
     void OnZombieDied(Zombie zombie);
     Zombie[] DeadCorpses();
     void AddPending(Vec3d pos, int dimension, bool alpha);
-    void ForceWakeCheck();
     bool HasDormantInZone(WatchZone zone);
     bool TryReactivateAtZone(WatchZone zone, Vec3d pos, int dimension);
 }

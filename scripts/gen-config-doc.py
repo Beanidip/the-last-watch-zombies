@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Generate docs/CONFIGURATION.md from source-generated defaults.
 
+Normally run via scripts/refresh-config-files.sh. Manually:
 1. dotnet run --project tools/ConfigDump -c Release -p:VintageStoryPath=<vs> -- config-dump .
 2. python3 scripts/gen-config-doc.py [config-dump] > docs/CONFIGURATION.md
+   python3 scripts/gen-config-doc.py [config-dump] --reference > CONFIG-REFERENCE.md
 
 Defaults come only from the ConfigDump output (i.e. from src/Config.cs after
 Validate()). Descriptions below are hand-written from reading the code; keys
@@ -14,7 +16,9 @@ import json
 import pathlib
 import sys
 
-DUMP = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else "config-dump")
+REFERENCE = "--reference" in sys.argv
+ARGS = [a for a in sys.argv[1:] if not a.startswith("--")]
+DUMP = pathlib.Path(ARGS[0] if ARGS else "config-dump")
 
 I, M = "I", "M"
 D = {
@@ -52,8 +56,6 @@ D = {
     "HordeInitialRetryWindowSeconds": "How long opening-wave retries continue.",
     "HordeSpawnIgnoreLightLevel": "Let horde waves ignore the light limit.",
     "HordeSpawnsInClaims": "Let horde waves spawn inside land claims (claims still protect blocks).",
-    "HordeLeadMinutesBeforeMigration": I,
-    "HordeSpawnAlignmentVersion": M,
     "ZombieSpawnNightOnly": "Strict: ambient spawns, dormant wakes and death Alphas only between NightStartsAtHour and NightEndsAtHour.",
     "ZombieSpawnHordeNightOnly": "Restrict automatic spawns/wakes to scheduled horde nights.",
     "AmbientSpawnRequiresNight": "Additional night requirement for NEW ambient zombies only.",
@@ -73,19 +75,12 @@ D = {
     "SpawnPositionAttempts": "Candidate columns per placement attempt (8–256).",
     "AmbientSpawnSurfaceOnly": "Limit ambient vertical search to ±SpawnSurfaceVerticalTolerance around the heightmap (else ±8).",
     "SpawnSurfaceVerticalTolerance": "Vertical search half-range around the terrain heightmap (0–8).",
-    "SpawnPerformanceTuningVersion": M,
-    "SpawnDistanceTuningVersion": M,
-    "SpawnLightConfigVersion": M,
     "AlphaDeathSpawnDelayMilliseconds": "Delay after respawn before the death Alpha is placed.",
     # --- dormant
-    "DormantWakeOnlyInSameZone": "Documented as zone-only vs legacy 5-chunk radius. **No effect in v2.0.9** — the live wake path is always zone-only (KNOWN_ISSUES #8).",
     "DormantReactivationPerZonePerDay": "Max dormant wakes per zone per cycle (0 = unlimited).",
     "DormantWakeBatchSize": "Max wake attempts per zone per pass (failures count). 1–16.",
     "DormantWakeIntervalSeconds": "Seconds between wake passes. 1–60.",
     "DormantMaxTotalWakesPerPass": "Max wake attempts per pass across all zones. 1–32.",
-    "DormantWakeRadiusChunks": I,
-    "DormantMaxChunkAttemptsPerCheck": I,
-    "DormantDebugLogging": I,
     # --- migration
     "ZoneBaseDailyMigrationChance": "Base per-zombie daily move chance; also scales stay/neighbour drift weights.",
     "ZoneMaxDailyMigrationChance": "Cap on per-zombie daily move chance and on each attraction influence.",
@@ -107,39 +102,31 @@ D = {
     "ZoneAttractionTier10Threshold": "Score for 10 rings.",
     "ZoneStayWeight": "Relative weight of the random 'stay' outcome.",
     "ZoneRandomNeighborWeight": "Relative weight of random drift to the 8 neighbours.",
-    "ZoneForgeActivityBonus": "Attraction for a forge found by the sunset industry scan.",
-    "ZoneCharcoalActivityBonus": "Attraction for a charcoal pit/pile.",
+    "ZoneForgeActivityBonus": "Attraction for a forge found by the sunset scan of loaded block entities.",
+    "ZoneCharcoalActivityBonus": "Attraction for an active charcoal pit (block entity). Finished charcoal piles no longer count (2.0.10).",
     "ZoneAnvilActivityBonus": "Attraction for an anvil.",
-    "ZoneIndustrySurfaceBelowBlocks": "Industry scan depth below the heightmap surface.",
-    "ZoneIndustrySurfaceAboveBlocks": "Industry scan height above the surface.",
+    "ZoneIndustrySurfaceBelowBlocks": "Industry block entities (forge, anvil, charcoal pit) count only from this far below the surface…",
+    "ZoneIndustrySurfaceAboveBlocks": "…to this far above it.",
     "ZoneMaxPathsCounted": "Cap on counted stone-path blocks per zone.",
     "LastWatchVerboseLogging": "Log a line after each migration.",
-    "ZoneSettlementThresholdChanges": I, "ZoneSettlementAttractionRadiusZones": I,
-    "ZoneBlockChangeAttractionRadiusZones": I, "ZonePlayerDeathAttractionRadiusZones": I,
-    "ZoneStrongholdAttractionRadiusZones": I, "ZoneHotspotAttractionRadiusZones": I,
-    "ZoneStonePathAttractionRadiusZones": I, "ZonePlayerPresenceAttractionRadiusZones": I,
-    "ZoneHighAttractionRadiusZones": I, "ZoneRandomDirectionWeightMultiplier": I,
-    "ZoneFuneralMaskPresenceReduction": I, "ZoneHighAttractionThreshold": I,
-    "ZoneStrongholdReinforcement": I, "ZoneActivitySurfaceBelowBlocks": I,
-    "ZoneActivitySurfaceAboveBlocks": I, "LastWatchMigrationTuningVersion": M,
     # --- infection
     "NormalHitsToInfect": "Damaging hits from regular zombies within HitWindowSeconds that cause infection.",
     "AlphaHitsToInfect": "Damaging hits from Alphas (counted separately from regular hits).",
     "HitWindowSeconds": "Sliding window for counting infecting hits (real seconds).",
     "InfectionTickSeconds": "Real seconds between infection poison ticks while untreated.",
     "InfectionDamagePerTick": "Poison damage per tick.",
-    "InfectionFatalEnabled": "Kill the player when InfectionFatalDays have passed since infection (even during treatment — KNOWN_ISSUES #3).",
+    "InfectionFatalEnabled": "Kill the player at the fatal deadline (InfectionFatalDays after infection, extended while a timely course of treatment runs).",
     "InfectionFatalDays": "In-game days from infection to death.",
     "CureDosesRequired": "Mycobiotic Cure doses needed. Each accepted dose also heals 20 HP.",
     "CureDoseIntervalDays": "Minimum in-game days between doses.",
+    "CureStartWindowDays": "In-game days after infection within which the FIRST dose must be taken (later first doses are refused; ignored when InfectionFatalEnabled is false). A course started in time can always finish: while treated, the fatal deadline is max(infection + InfectionFatalDays, first dose + CureDosesRequired × CureDoseIntervalDays). 0.05–InfectionFatalDays.",
     "TreatedInfectionTickSeconds": "Poison tick interval after the first dose (≥ InfectionTickSeconds).",
     "CurePsychedelicEnabled": "Visual 'psychedelic' strength 0.4→2.0 across the course of doses.",
-    "HitsToInfect": I, "CurePsychedelicConfigVersion": M, "CureBalanceConfigVersion": M,
     # --- loot
     "CorpseDelaySeconds": "Real seconds a corpse lies (while loaded) before poofing and dropping loot.",
     "CorpseRot": "game:rot dropped per corpse.",
     "CorpseBones": "game:bone dropped per corpse.",
-    "CorpseSmallHides": "game:hide-raw-small dropped per corpse.",
+    "CorpseRustyGears": "game:gear-rusty dropped per corpse (replaced small raw hides in 2.0.10; a saved CorpseSmallHides value is carried over once).",
     "AlphaFuneralMaskChanceDenominator": "Alpha corpses drop one funeral mask with chance 1/N.",
     "AlphaFuneralMaskItemCodes": "Pool of item codes for the Alpha mask drop ('game:' assumed if no domain).",
     # --- equipment
@@ -148,7 +135,6 @@ D = {
     "MaskDrainSeconds": "Seconds of crouching-with-mask per durability point.",
     "RotTunicFirstWearDamage": "Total sickness damage the first time a tunic item is worn (0.5 HP/s).",
     "RotTunicDrainSeconds": "Seconds worn per tunic durability point (any stance).",
-    "MaskBalanceConfigVersion": M,
     "QuietEyeBandageItemIds": "Legacy numeric item IDs treated as eye coverings (mutes pain sounds).",
     "EyeBandageCodeFragments": "Item-code fragments treated as eye coverings.",
     "EyeBandageInventoryClasses": "Inventory class-name fragments searched for eye coverings.",
@@ -171,24 +157,21 @@ D = {
     "PursuitSteerIntervalSeconds": "Interval between direct-steer updates in open terrain.",
     "PursuitDirectWalkRangeBlocks": "Max distance for direct steering instead of A*.",
     "PursuitRepathTargetMovementBlocks": "Prey movement that triggers a new route.",
-    "PursuitResponsivenessVersion": M, "LastSeenPursuitTuningVersion": M,
+    "LastSeenPursuitTuningVersion": M,
     "FollowAlphaEnabled": "Idle normal zombies follow a nearby Alpha.",
     "AlphaFollowRange": "Range at which an Alpha is followed.",
     "AlphaFollowStopDistance": "Distance at which followers stop.",
     "AlphaFollowRefreshSeconds": "Follow re-route interval.",
     "SneakDetectionRangeMultiplier": "Detection range multiplier vs a sneaking player (acquisition only).",
     "SneakAcquireChance": "Per-scan chance to acquire a sneaking player in range.",
-    "SneakLoseTargetChance": I,
     "SneakAlwaysDetectedDistance": "Sneaking players closer than this are always detected.",
     "RoamEnabled": "Idle roaming.",
     "RoamWalkSeconds": "Roam walk phase length.",
     "RoamPauseSeconds": "Roam pause phase length.",
     "RoamRouteRefreshSeconds": "Roam re-route interval.",
     "RoamSpeedMultiplier": "Roam speed multiplier.",
-    "LostSearchTimingConfigVersion": M,
     "ManualHordeSoundRange": "Range of the horde raven/moan cue.",
     "ManualHordeMoans": "Moans played to each player at horde start.",
-    "ManualHordeZombieDetectionRadius": I,
     # --- siege
     "BlockBreakingEnabled": "Zombies may damage blocks between them and their target when stuck.",
     "BlockBreakIntervalSeconds": "Seconds between siege strike attempts.",
@@ -206,7 +189,6 @@ D = {
     "SiegeNavigationRefreshSeconds": "Chase re-route interval.",
     "BlockBreakReach": "Max distance to an attackable obstruction.",
     "HordeDoorAttemptCooldownSeconds": "Seconds between door-open attempts.",
-    "SiegeBalanceConfigVersion": M,
     # --- sound
     "MoanMinSeconds": "Minimum seconds between moans.",
     "MoanMaxSeconds": "Maximum seconds between moans.",
@@ -218,13 +200,13 @@ D = {
 GROUPS = [
     ("Special variants", ["GrabberSpawnChance", "HiveSpawnChance", "ScreamerSpawnChance", "BloaterSpawnChance", "GrabberLeapCooldownSeconds", "HiveBeeCooldownSeconds", "BloaterBurstRadius", "BloaterBurstDamage", "BloaterRotDrop", "BloaterPoisonSeconds", "BloaterPoisonDamagePerSecond"]),
     ("Spawning, light and time", ["MaxActiveZombies", "ZombieSpawnNightOnly", "ZombieSpawnHordeNightOnly", "AmbientSpawnRequiresNight", "NightStartsAtHour", "NightEndsAtHour", "AmbientSpawnChancePerSecond", "zombiepopdailyaddlimit", "SpawnMaxLightLevel", "SpawnMinDistance", "SpawnMaxDistance", "SpawnMinimumOtherPlayerDistance", "SpawnPositionAttempts", "AmbientSpawnSurfaceOnly", "SpawnSurfaceVerticalTolerance", "SpawnAlphaOnPlayerDeath", "AlphaDeathSpawnDelayMilliseconds", "SpawnDebugLogging"]),
-    ("Active lifetime and dormancy", ["ZombieIdleDespawnSeconds", "ZombieStayActiveNearPlayers", "ZombieKeepActiveRadiusBlocks", "ZombiePresenceCheckSeconds", "DormantPopulationCap", "DormantWakeOnlyInSameZone", "DormantReactivationPerZonePerDay", "DormantWakeBatchSize", "DormantWakeIntervalSeconds", "DormantMaxTotalWakesPerPass", "DormantWakeRadiusChunks", "DormantMaxChunkAttemptsPerCheck", "DormantDebugLogging"]),
+    ("Active lifetime and dormancy", ["ZombieIdleDespawnSeconds", "ZombieStayActiveNearPlayers", "ZombieKeepActiveRadiusBlocks", "ZombiePresenceCheckSeconds", "DormantPopulationCap", "DormantReactivationPerZonePerDay", "DormantWakeBatchSize", "DormantWakeIntervalSeconds", "DormantMaxTotalWakesPerPass"]),
     ("Migration and settlements", ["ZoneMigrationHour", "ZoneBaseDailyMigrationChance", "ZoneMaxDailyMigrationChance", "ZoneStayWeight", "ZoneRandomNeighborWeight", "ZonePlayerPresenceBonus", "ZoneSettlementBonus", "ZoneStrongholdBonus", "ZoneStonePathBonusPerBlock", "ZoneMaxPathsCounted", "ZoneDeathBonusPerDeath", "ZoneBonfireAttractionBonus", "ZoneFarmAnimalThreshold", "ZoneFarmAnimalAttractionBonus", "ZoneForgeActivityBonus", "ZoneCharcoalActivityBonus", "ZoneAnvilActivityBonus", "ZoneIndustrySurfaceBelowBlocks", "ZoneIndustrySurfaceAboveBlocks", "ZoneAttractionTier4Threshold", "ZoneAttractionTier6Threshold", "ZoneAttractionTier8Threshold", "ZoneAttractionTier10Threshold", "ZoneTraderDormantSeed", "ZoneBellRangeZones", "ZoneBellOverrunThreshold", "ZoneMigrationChatAnnouncement", "LastWatchVerboseLogging"]),
     ("Seventh-night hordes", ["HordeEveryDays", "HordeStartHour", "HordeMinutesBeforeStartHour", "HordeDurationSeconds", "HordeWaveIntervalSeconds", "HordeInitialMinZombiesPerPlayer", "HordeWaveMinZombiesPerPlayer", "HordeWaveMaxZombiesPerPlayer", "HordeInitialRetrySeconds", "HordeInitialRetryWindowSeconds", "HordeSpawnIgnoreLightLevel", "HordeSpawnsInClaims", "HordeMigrationMaxZoneSteps", "HordeDetectionRange", "ManualHordeSoundRange", "ManualHordeMoans"]),
-    ("Infection and treatment", ["NormalHitsToInfect", "AlphaHitsToInfect", "HitWindowSeconds", "InfectionTickSeconds", "InfectionDamagePerTick", "InfectionFatalEnabled", "InfectionFatalDays", "CureDosesRequired", "CureDoseIntervalDays", "TreatedInfectionTickSeconds", "CurePsychedelicEnabled"]),
+    ("Infection and treatment", ["NormalHitsToInfect", "AlphaHitsToInfect", "HitWindowSeconds", "InfectionTickSeconds", "InfectionDamagePerTick", "InfectionFatalEnabled", "InfectionFatalDays", "CureDosesRequired", "CureDoseIntervalDays", "CureStartWindowDays", "TreatedInfectionTickSeconds", "CurePsychedelicEnabled"]),
     ("Combat, targeting and AI", ["AttackDamage", "AttackCooldownSeconds", "MoveSpeed", "AlphaSpeedMultiplier", "AlphaAttackDamageMultiplier", "DetectionRange", "AlphaDetectionRangeBonus", "TargetWhitelist", "TargetBlacklist", "IgnoreVanillaAnimals", "NpcTraderInterestSeconds", "ZombieLostTargetPursuitSeconds", "SneakDetectionRangeMultiplier", "SneakAcquireChance", "SneakAlwaysDetectedDistance", "FollowAlphaEnabled", "AlphaFollowRange", "AlphaFollowStopDistance", "AlphaFollowRefreshSeconds", "RoamEnabled", "RoamWalkSeconds", "RoamPauseSeconds", "RoamRouteRefreshSeconds", "RoamSpeedMultiplier", "AiPreyScansPerSecond", "AiRouteRequestsPerSecond", "AiPreyScanIntervalSeconds", "PursuitSteerIntervalSeconds", "PursuitDirectWalkRangeBlocks", "PursuitRepathTargetMovementBlocks", "PerformanceDiagnostics"]),
     ("Siege, claims and reinforcement", ["SiegeEnabled", "BlockBreakingEnabled", "BlockBreakIntervalSeconds", "BlockBreakChance", "HordeBlockBreakChance", "NonHordeBlockReinforcementDamage", "HordeBlockReinforcementDamage", "ProtectClaims", "ProtectReinforcedBlocks", "HordeOpensDoors", "HordeDoorAttemptCooldownSeconds", "BlockBreakReach", "SiegeProgressSampleSeconds", "SiegeStuckSeconds", "SiegeMinimumTravelBlocks", "SiegeNavigationRefreshSeconds"]),
-    ("Corpses and loot", ["CorpseDelaySeconds", "CorpseRot", "CorpseBones", "CorpseSmallHides", "AlphaFuneralMaskChanceDenominator", "AlphaFuneralMaskItemCodes"]),
+    ("Corpses and loot", ["CorpseDelaySeconds", "CorpseRot", "CorpseBones", "CorpseRustyGears", "AlphaFuneralMaskChanceDenominator", "AlphaFuneralMaskItemCodes"]),
     ("Stealth equipment", ["FuneralMask1Durability", "OtherFuneralMaskDurability", "MaskDrainSeconds", "RotTunicFirstWearDamage", "RotTunicDrainSeconds", "QuietEyeBandageItemIds", "EyeBandageCodeFragments", "EyeBandageInventoryClasses"]),
     ("Sound", ["MoanMinSeconds", "MoanMaxSeconds", "ZombieMoanVolume", "ZombieHurtSoundVolume", "ZombieHurtSoundCooldownSeconds"]),
 ]
@@ -232,6 +214,25 @@ GROUPS = [
 main = json.load(open(DUMP / "thelastwatchzombiesconfigmain.json"))
 adv = json.load(open(DUMP / "thelastwatchzombiesconfigadvanced.json"))
 retired = json.load(open(DUMP / "retired-keys.json"))
+
+if REFERENCE:
+    # Compact key/default index shipped inside the mod ZIP as CONFIG-REFERENCE.md.
+    print("# The Last Watch Zombies — Full Config Reference\n")
+    print("<!-- GENERATED by scripts/gen-config-doc.py --reference from tools/ConfigDump output. -->\n")
+    print("The mod writes two JSON files under `VintagestoryData/ModConfig/`. Defaults below are generated "
+          "from the source after validation. Descriptions: see docs/CONFIGURATION.md in the source repository.\n")
+    for title, data in (("Main gameplay settings (`thelastwatchzombiesconfigmain.json`)", main),
+                        ("Advanced settings (`thelastwatchzombiesconfigadvanced.json`)", adv)):
+        print(f"## {title}\n")
+        print("| JSON key | Default |")
+        print("|---|---|")
+        for k, v in data.items():
+            print(f"| `{k}` | `{json.dumps(v)}` |")
+        print()
+    print("## Retired keys\n")
+    print("Accepted when reading an old file, removed when the server rewrites it: " + ", ".join(f"`{k}`" for k in retired) + ".\n")
+    print("Spawn pause is immediate world state, controlled by `/zombiepause` and `/zombieunpause`, not a restart-only config field.")
+    sys.exit(0)
 allkeys = {**{k: ("main", v) for k, v in main.items()}, **{k: ("advanced", v) for k, v in adv.items()}}
 
 def fmt(v):
@@ -242,18 +243,18 @@ out = []
 w = out.append
 w("# Configuration Reference\n")
 w("<!-- GENERATED by scripts/gen-config-doc.py from tools/ConfigDump output. Do not hand-edit defaults. -->\n")
-w("Defaults below are produced from `src/Config.cs` (after `Validate()`), not copied from the shipped `DEFAULT-*.json` files, which are stale (KNOWN_ISSUES #9).\n")
+w("Defaults below are produced from `src/Config.cs` (after `Validate()`). The shipped `DEFAULT-*.json` files and `CONFIG-REFERENCE.md` are generated from the same output by `scripts/refresh-config-files.sh`; CI fails if they drift.\n")
 w("## Files and lifecycle\n")
 w("* `VintagestoryData/ModConfig/thelastwatchzombiesconfigmain.json` — gameplay settings (`main`).")
 w("* `VintagestoryData/ModConfig/thelastwatchzombiesconfigadvanced.json` — budgets, tuning, markers (`advanced`).")
 w("* Load order: built-in defaults ← advanced ← main, then `Config.Validate()` clamps every value into its allowed range (out-of-range values are silently corrected).")
 w("* **The server rewrites both files on every start** with every non-retired key, so values persist but unknown or retired keys are removed. Back up custom files before upgrading.")
-w("* `/zombieconfig <key> [value]` edits the saved file (validated, case-insensitive keys) — **restart required**. The 49 short command names are listed in `COMMANDS.md`.")
+w("* `/zombieconfig <key> [value]` edits the saved file (validated, case-insensitive keys) — **restart required**. The 51 short command names are listed in `COMMANDS.md`.")
 w("* Pre-merge files (`seventhnightconfig*.json`, `thelastwatchconfig*.json`) are not read.")
 w("* Clients read their own local copy only for funeral-mask durability display.\n")
-w("Status column: **A** active · **I** inert in v2.0.9 (written, never read) · **M** one-time migration marker (no effect; most upgrade routines are not called in v2.0.9).\n")
+w("Status column: **A** active · **I** inert in v2.0.9 (written, never read) · **M** one-time migration marker (no gameplay effect).\n")
 w("### Regenerating\n")
-w("```bash\nbash scripts/fetch-vs-server.sh 1.22.7 vs-server\ndotnet run --project tools/ConfigDump -c Release -p:VintageStoryPath=$PWD/vs-server -- config-dump .\npython3 scripts/gen-config-doc.py config-dump > docs/CONFIGURATION.md\n```\n")
+w("```bash\nbash scripts/fetch-vs-server.sh 1.22.7 vs-server\nbash scripts/refresh-config-files.sh vs-server\n```\n")
 seen = set()
 missing = []
 for title, keys in GROUPS:
@@ -275,7 +276,7 @@ for title, keys in GROUPS:
     w("")
 rest = [k for k in allkeys if k not in seen]
 if rest:
-    w("## Inert settings and migration markers\n")
+    w("## Migration markers\n")
     w("| Key | File | Default | St | Description |")
     w("|---|---|---|---|---|")
     for k in rest:

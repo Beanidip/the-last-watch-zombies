@@ -1,3 +1,28 @@
+# 2.0.10 — stability update (unreleased)
+
+Gameplay changes:
+
+- **Corpse loot:** zombies now drop **1 rusty gear** (`game:gear-rusty`) instead of a small raw hide. Rot, bones, the Alpha funeral-mask chance and Bloater rot are unchanged. A server that had customised `CorpseSmallHides` keeps that number as `CorpseRustyGears`.
+- **Infection:** you have **2 in-game days** after infection to take the first Mycobiotic Cure dose (`CureStartWindowDays`). Start in time and the course can always be finished: while you keep dosing, death is postponed to *first dose + 6 days*. After the 2-day window the cure is refused (and not consumed); untreated infection is still fatal after 7 days. `/zombieinfection` shows the time left to start.
+
+Fixes:
+
+- Strongholds, bells and stone paths destroyed by zombies (or removed by explosions/other mods) no longer leave "ghost" records that kept attracting hordes and reinforcing new blocks.
+- Zombies give up on a rot-concentrate pile they cannot reach after 15 seconds without progress and ignore it for 60 seconds, instead of ignoring players forever.
+- The migration "conservation" safety check now really compares stored dormant counts (it could never trigger before) and repairs a drifted counter.
+
+Performance:
+
+- Ground-storage piles no longer each run a 2-second timer to look for bait; the bait index updates from inventory events.
+- The sunset industry check reads the block entities of loaded chunks instead of ~300,000 individual blocks per zone. Forges, anvils and *active* charcoal pits count; finished charcoal piles no longer do.
+
+Configuration cleanup:
+
+- Removed 34 settings that had no effect (including `DormantWakeOnlyInSameZone`, which was advertised as restoring a 5-chunk wake radius but did nothing). Old values are ignored and dropped the next time the server rewrites its config.
+- `DEFAULT-*.json` and `CONFIG-REFERENCE.md` are regenerated from the source and now match the real defaults.
+
+---
+
 # 2.0.9 STABLE — Zombieween dormant event
 
 - Added admin-only `/zombieween` (`controlserver` privilege), callable by console or an admin player.

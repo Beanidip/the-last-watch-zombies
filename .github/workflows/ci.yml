@@ -78,5 +78,5 @@ jobs:
       - name: Regression tests
         run: dotnet run --project tests/Regression.csproj -c Release "-p:VintageStoryPath=$RUNNER_TEMP/vs-server"
 
-      - name: Configuration defaults report (informational)
-        run: dotnet run --project tools/ConfigDump -c Release "-p:VintageStoryPath=$RUNNER_TEMP/vs-server" -- config-dump .
+      - name: Config artifacts match source (DEFAULT-*.json, CONFIG-REFERENCE.md, docs/CONFIGURATION.md)
+        run: bash scripts/refresh-config-files.sh --check "$RUNNER_TEMP/vs-server"

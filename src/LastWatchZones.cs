@@ -294,6 +294,33 @@ public sealed class LastWatchZones : ModSystem, IZombieWorldDirector
             { Dimension = key.Dimension, X = key.X, Z = key.Z };
         return state;
     }
+    // Drop building records whose block is gone (only where the chunk is
+    // loaded; unloaded records are kept). Updates a stronghold's tier if the
+    // block was swapped. Returns true if anything changed.
+    internal bool ValidateBuildings(WatchZoneState state)
+    {
+        if (sapi == null || state == null) return false;
+        var blocks = sapi.World.BlockAccessor;
+        bool changed = false;
+        bool Gone(WatchBuilding b, System.Func<Block, bool> stillThere)
+        {
+            var pos = b.Position;
+            if (blocks.GetChunkAtBlockPos(pos) == null) return false;
+            return !stillThere(blocks.GetBlock(pos));
+        }
+        changed |= state.Strongholds.RemoveAll(b => Gone(b, IsStronghold)) > 0;
+        foreach (var stronghold in state.Strongholds)
+        {
+            var pos = stronghold.Position;
+            if (blocks.GetChunkAtBlockPos(pos) == null) continue;
+            int tier = StrongholdStrength(blocks.GetBlock(pos));
+            if (tier > 0 && tier != stronghold.StrongholdStrength) { stronghold.StrongholdStrength = tier; changed = true; }
+        }
+        changed |= state.Bells.RemoveAll(b => Gone(b, block => IsCode(block, BellCode))) > 0;
+        changed |= state.Bonfires.RemoveAll(b => Gone(b, block => IsCode(block, BonfireCode) ||
+            IsCode(block, BonfireLoadedCode) || IsCode(block, BonfireLitCode))) > 0;
+        return changed;
+    }
     void Load()
     {
         try { LoadZones(); zonesLoaded = true; }
@@ -503,31 +530,32 @@ public sealed class LastWatchZones : ModSystem, IZombieWorldDirector
         if (code.Contains("anvil", StringComparison.OrdinalIgnoreCase)) return 4;
         return 0;
     }
-    int ScanIndustryInLoadedZone(WatchZone zone, Dictionary<int, int> blockTypeFlags)
+    // Forges, anvils and charcoal pits are block entities, so the once-per-
+    // sunset scan enumerates the block entities of the zone's LOADED chunks
+    // (3x3 columns, every height) instead of reading ~300k individual blocks.
+    // Only entities within the configured band around the terrain surface
+    // count. Unloaded chunks are skipped, never loaded.
+    int ScanIndustryInLoadedZone(WatchZone zone)
     {
         int flags = 0;
-        int side = WatchZone.ChunksPerSide * GlobalConstants.ChunkSize;
-        int x0 = zone.X * side, z0 = zone.Z * side;
         var world = sapi.World.BlockAccessor;
         int below = core.Settings.ZoneIndustrySurfaceBelowBlocks;
         int above = core.Settings.ZoneIndustrySurfaceAboveBlocks;
-        for (int x = x0; x < x0 + side; x++)
-        for (int z = z0; z < z0 + side; z++)
+        int chunksHigh = Math.Max(1, sapi.WorldManager.MapSizeY / GlobalConstants.ChunkSize);
+        int dimensionOffset = zone.Dimension * GlobalConstants.DimensionSizeInChunks;
+        for (int cx = zone.X * WatchZone.ChunksPerSide; cx < (zone.X + 1) * WatchZone.ChunksPerSide; cx++)
+        for (int cz = zone.Z * WatchZone.ChunksPerSide; cz < (zone.Z + 1) * WatchZone.ChunksPerSide; cz++)
+        for (int cy = 0; cy < chunksHigh; cy++)
         {
-            // Never force-load chunks during the once-daily inspection.
-            var column = new BlockPos(x, 0, z, zone.Dimension);
-            int surface = world.GetTerrainMapheightAt(column);
-            column.Y = surface;
-            if (world.GetChunkAtBlockPos(column) == null) continue;
-            int bottom = Math.Max(1, surface - below);
-            int top = surface + above;
-            for (int y = bottom; y <= top; y++)
+            var entities = world.GetChunk(cx, cy + dimensionOffset, cz)?.BlockEntities;
+            if (entities == null || entities.Count == 0) continue;
+            core.Profiler.Count("migration.industryBlockEntities", entities.Count);
+            foreach (var entity in entities.Values)
             {
-                column.Y = y;
-                var block = world.GetBlock(column);
-                if (block == null) continue;
-                if (!blockTypeFlags.TryGetValue(block.Id, out int type))
-                    blockTypeFlags[block.Id] = type = IndustryFlag(block);
+                int type = IndustryFlag(entity?.Block);
+                if (type == 0 || (flags & type) == type || entity.Pos == null) continue;
+                int surface = world.GetTerrainMapheightAt(entity.Pos);
+                if (entity.Pos.Y < surface - below || entity.Pos.Y > surface + above) continue;
                 flags |= type;
                 if (flags == 7) return flags;
             }
@@ -573,6 +601,7 @@ public sealed class LastWatchZones : ModSystem, IZombieWorldDirector
         if ((IsCode(now, BonfireCode) || IsCode(now, BonfireLoadedCode) || IsCode(now, BonfireLitCode)) &&
             !state.Bonfires.Any(b => b.X == pos.X && b.Y == pos.Y && b.Z == pos.Z))
             state.Bonfires.Add(BuildingAt(pos));
+        ValidateBuildings(state);
         if (state.Strongholds.Count > 0 && reinforce != null &&
             !IsStronghold(now) && !IsCode(now, BellCode) &&
             !IsCode(now, BonfireCode) && !IsCode(now, BonfireLoadedCode) && !IsCode(now, BonfireLitCode))
@@ -587,10 +616,16 @@ public sealed class LastWatchZones : ModSystem, IZombieWorldDirector
     }
     void Broken(IServerPlayer player, int oldId, BlockSelection sel)
     {
-        if (!core.Settings.LastWatchEnabled || sel?.Position == null || player == null) return;
-        var pos = sel.Position;
+        if (player == null || sel?.Position == null) return;
+        ForgetBlock(sel.Position, sapi.World.GetBlock(oldId));
+    }
+    // Remove zone records for a block that no longer exists. Called for player
+    // breaks and for blocks destroyed by zombie sieges. Idempotent for
+    // buildings; each call decrements the stone-path count at most once.
+    public void ForgetBlock(BlockPos pos, Block old)
+    {
+        if (sapi == null || !core.Settings.LastWatchEnabled || pos == null || old == null) return;
         if (!zones.TryGetValue(WatchZone.FromBlock(pos.X, pos.Z, pos.dimension), out var state)) return;
-        var old = sapi.World.GetBlock(oldId);
         if (IsPath(old)) state.StonePaths = Math.Max(0, state.StonePaths - 1);
         if (IsCode(old, BellCode)) state.Bells.RemoveAll(b => b.X == pos.X && b.Y == pos.Y && b.Z == pos.Z);
         if (IsStronghold(old)) state.Strongholds.RemoveAll(b => b.X == pos.X && b.Y == pos.Y && b.Z == pos.Z);
@@ -607,7 +642,9 @@ public sealed class LastWatchZones : ModSystem, IZombieWorldDirector
     {
         if (!core.Settings.LastWatchEnabled || p?.Entity == null || sel?.Position == null || reinforce == null) return;
         var pos = sel.Position;
-        if (!zones.TryGetValue(WatchZone.FromBlock(pos.X, pos.Z, pos.dimension), out var state) || state.Strongholds.Count == 0) return;
+        if (!zones.TryGetValue(WatchZone.FromBlock(pos.X, pos.Z, pos.dimension), out var state)) return;
+        ValidateBuildings(state);
+        if (state.Strongholds.Count == 0) return;
         // Respect existing claim ownership / permission rules. Never turn a
         // stronghold into a land-claim or lock bypass.
         if (!sapi.World.Claims.TryAccess(p, pos, EnumBlockAccessFlags.BuildOrBreak)) return;
@@ -733,6 +770,7 @@ public sealed class LastWatchZones : ModSystem, IZombieWorldDirector
     public ZoneView SnapshotAt(WatchZone key)
     {
         zones.TryGetValue(key, out var z);
+        ValidateBuildings(z);
         int dormant = (int)Math.Min(int.MaxValue, Population.MigrationSnapshot().Where(c =>
             WatchZone.FromChunk(c.X, c.Z, c.Dimension) == key).Sum(c => c.Normal + c.Alpha));
         var fire = BonfireStatus(z);
@@ -827,6 +865,9 @@ public sealed class LastWatchZones : ModSystem, IZombieWorldDirector
     {
         using var timing = core.Profiler.Measure("migration.daily");
         var C = core.Settings;
+        // Explosions, other mods or world edits can remove buildings without a
+        // player break event; never let a vanished stronghold keep attracting.
+        foreach (var zone in zones.Values) ValidateBuildings(zone);
         var start = Population.MigrationSnapshot();
         core.Profiler.Count("migration.originChunks", start.Count);
         // Freeze attraction for the entire day; updated populations cannot
@@ -860,11 +901,9 @@ public sealed class LastWatchZones : ModSystem, IZombieWorldDirector
             .Concat(zones.Values.Where(z => z.Strongholds.Count > 0).Select(z => z.Key))
             .Distinct().ToArray();
         var industryAtSunset = new Dictionary<WatchZone, int>();
-        // Short-lived cache, shared between zone scans, freed after migration.
-        var blockTypeFlags = new Dictionary<int, int>();
         foreach (var key in industryZones)
         {
-            int found = ScanIndustryInLoadedZone(key, blockTypeFlags);
+            int found = ScanIndustryInLoadedZone(key);
             if (found != 0) industryAtSunset[key] = found;
         }
         core.Profiler.Count("migration.industryZonesInspected", industryZones.Length);
@@ -908,7 +947,7 @@ public sealed class LastWatchZones : ModSystem, IZombieWorldDirector
             int reach = AttractionTierRadius(score, C);
             attraction[key] = (score, reach);
         }
-        var originZones = start.Where(c => !c.AwaitDeparture)
+        var originZones = start
             .Select(c => WatchZone.FromChunk(c.X, c.Z, c.Dimension)).ToHashSet();
         var nearbyAttractions = new Dictionary<WatchZone, List<WatchZone>>();
         foreach (var entry in attraction)
@@ -943,13 +982,9 @@ public sealed class LastWatchZones : ModSystem, IZombieWorldDirector
         var arrivals = new Dictionary<WatchZone, int>();
         long moved = 0;
         var transactions = new Dictionary<(string Source, int X, int Z, bool Alpha), MigrationTransfer>();
-        // Avoid merging newly arrived zombies into an AwaitDeparture chunk.
-        // Its cooldown protects the older, locally timed-out population.
-        var blockedChunks = start.Where(c => c.AwaitDeparture).Select(c => c.Key).ToHashSet();
         var weightCache = new Dictionary<WatchZone, (KeyValuePair<WatchZone, double>[] Weighted, double Sum, double Chance)>();
         foreach (var origin in start)
         {
-            if (origin.AwaitDeparture) continue;
             var from = WatchZone.FromChunk(origin.X, origin.Z, origin.Dimension);
             if (protectedZones.Contains(from)) continue; // no outbound migration
             // Random drift and staying remain available at every sunset;
@@ -1002,8 +1037,7 @@ public sealed class LastWatchZones : ModSystem, IZombieWorldDirector
             double sum = cached.Sum;
             double chanceToMove = cached.Chance;
             if (sum <= 0 || chanceToMove <= 0) continue;
-            // Eligible landing chunks are known before the transaction. This
-            // prevents migrants getting trapped in a local cooldown bucket.
+            // Landing chunks for each goal: any chunk column of the destination zone.
             var eligibleChunks = new Dictionary<WatchZone, (int X, int Z)[]>();
             foreach (var goal in weighted.Select(w => w.Key))
             {
@@ -1014,8 +1048,7 @@ public sealed class LastWatchZones : ModSystem, IZombieWorldDirector
                 for (int z = dest.Z * WatchZone.ChunksPerSide;
                     z < (dest.Z + 1) * WatchZone.ChunksPerSide; z++)
                 {
-                    if (!blockedChunks.Contains($"{origin.Dimension}:{x}:{origin.Y}:{z}"))
-                        possible.Add((x, z));
+                    possible.Add((x, z));
                 }
                 eligibleChunks[goal] = possible.ToArray();
             }
@@ -1062,7 +1095,7 @@ public sealed class LastWatchZones : ModSystem, IZombieWorldDirector
         }
         // Bells are deliberately simple: one ring for arrivals in a neighboring
         // zone, two for arrivals at the bell, three when the bell's own zone has
-        // more than 30 dormant zombies after the committed migration.
+        // more than ZoneBellOverrunThreshold dormant zombies after the migration.
         if (migrationCommitted)
         {
             var dormantByZone = Population.MigrationSnapshot()
@@ -1137,7 +1170,7 @@ public sealed class LastWatchZones : ModSystem, IZombieWorldDirector
                 {
                     1 => "Dormant zombies migrated into the neighboring ring.",
                     2 => "Dormant zombies migrated into this zone.",
-                    _ => "More than 30 dormant zombies are in this zone."
+                    _ => $"More than {core.Settings.ZoneBellOverrunThreshold} dormant zombies are in this zone."
                 }), EnumChatType.Notification);
     }
 }

@@ -39,7 +39,11 @@ public static class StandaloneConfigStorage
         nameof(Config.ZoneHotspotBonus),
         nameof(Config.ZoneHotspotBlocksChanged),
         nameof(Config.ZoneAttractionMinBlocksChanged),
+        // Removed fields: a saved value is ignored (or migrated, see Load).
+        LegacyCorpseSmallHidesKey,
     };
+    // Corpses dropped small raw hides until 2.0.10; rusty gears replaced them.
+    public const string LegacyCorpseSmallHidesKey = "CorpseSmallHides";
     public static bool IsRetired(string name) => RetiredKeys.Contains(name);
 
     // Unified setting ownership for the user-facing main/advanced JSON files.
@@ -47,7 +51,6 @@ public static class StandaloneConfigStorage
     {
         nameof(Config.ZombiePopDailyAddLimit),
         nameof(Config.DormantPopulationCap),
-        nameof(Config.DormantWakeOnlyInSameZone),
         nameof(Config.DormantReactivationPerZonePerDay),
         nameof(Config.DormantWakeBatchSize),
         nameof(Config.DormantWakeIntervalSeconds),
@@ -133,7 +136,7 @@ public static class StandaloneConfigStorage
         nameof(Config.CorpseDelaySeconds),
         nameof(Config.CorpseRot),
         nameof(Config.CorpseBones),
-        nameof(Config.CorpseSmallHides),
+        nameof(Config.CorpseRustyGears),
         nameof(Config.AlphaFuneralMaskChanceDenominator),
         nameof(Config.AlphaFuneralMaskItemCodes),
         nameof(Config.FuneralMask1Durability),
@@ -147,6 +150,7 @@ public static class StandaloneConfigStorage
         nameof(Config.InfectionFatalDays),
         nameof(Config.CureDosesRequired),
         nameof(Config.CureDoseIntervalDays),
+        nameof(Config.CureStartWindowDays),
         nameof(Config.TreatedInfectionTickSeconds),
         nameof(Config.CurePsychedelicEnabled),
     };
@@ -165,9 +169,29 @@ public static class StandaloneConfigStorage
     public static Config Load(ICoreServerAPI api)
     {
         var settings = new Config();
-        Overlay(settings, api.LoadModConfig<JObject>(AdvancedFile));
-        Overlay(settings, api.LoadModConfig<JObject>(MainFile));
+        var advanced = api.LoadModConfig<JObject>(AdvancedFile);
+        var main = api.LoadModConfig<JObject>(MainFile);
+        Overlay(settings, advanced);
+        Overlay(settings, main);
+        MigrateCorpseDrops(settings, advanced, main);
         return settings;
+    }
+
+    // One-time carry-over: an admin-chosen small-hide count becomes the rusty
+    // gear count, unless the new key is already present. The old key is then
+    // dropped by Save because it is retired.
+    public static void MigrateCorpseDrops(Config settings, params JObject[] files)
+    {
+        if (files.Any(f => f?.Properties().Any(p => p.Name.Equals(nameof(Config.CorpseRustyGears),
+                StringComparison.OrdinalIgnoreCase)) == true)) return;
+        foreach (var file in files.Reverse())
+        {
+            var legacy = file?.Properties().FirstOrDefault(p =>
+                p.Name.Equals(LegacyCorpseSmallHidesKey, StringComparison.OrdinalIgnoreCase));
+            if (legacy == null || legacy.Value.Type != JTokenType.Integer) continue;
+            settings.CorpseRustyGears = (int)legacy.Value;
+            return;
+        }
     }
 
     public static Config LoadClient(ICoreClientAPI api)

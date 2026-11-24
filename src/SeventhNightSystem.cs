@@ -23,6 +23,9 @@ public partial class SeventhNightSystem : ModSystem
     public const string InfectionStartDayKey = "seventhnight-infected-at-day";
     public const string CureDosesKey = "seventhnight-cure-doses";
     public const string CureLastDoseDayKey = "seventhnight-last-cure-dose-day";
+    // Added in 2.0.10. Older saves with doses but no record are estimated from
+    // the last dose (see FirstDoseDay), never backdated past infection.
+    public const string CureFirstDoseDayKey = "seventhnight-first-cure-dose-day";
     public const string QuietBandageKey = "seventhnight-quiet-bandage";
     public Config Settings = new();
     public readonly WorkProfiler Profiler = new();
@@ -374,9 +377,14 @@ public partial class SeventhNightSystem : ModSystem
         double lastDose = entity.WatchedAttributes.GetDouble(CureLastDoseDayKey, now);
         double remaining = taken == 0 ? 0 : Math.Max(0, Settings.CureDoseIntervalDays - (now - lastDose));
         string nextDose = remaining > 0 ? $"next dose in {Rules.FormatGameTimeUntil(remaining)}" : "next dose ready";
+        double deadline = Rules.FatalDeadlineDay(infectedAt, taken, FirstDoseDay(entity, taken, infectedAt), Settings);
         string fatal = Settings.InfectionFatalEnabled
-            ? $"fatal in {Rules.FormatGameTimeUntil(Math.Max(0, Settings.InfectionFatalDays - elapsed))}"
+            ? $"fatal in {Rules.FormatGameTimeUntil(Math.Max(0, deadline - now))}"
             : "fatality disabled";
+        if (taken == 0)
+            nextDose = Rules.CanStartCure(infectedAt, now, Settings)
+                ? $"start the cure within {Rules.FormatGameTimeUntil(Math.Max(0, infectedAt + Settings.CureStartWindowDays - now))}"
+                : "too late to start the cure";
         return $"Infection status: INFECTED for {Rules.FormatGameTimeUntil(elapsed)} (in-game). " +
             $"Poison: {Rules.PoisonDamage(Settings):0.##} HP every {Rules.PoisonIntervalSeconds(taken, Settings):0.##} real seconds. " +
             $"Cure doses: {taken}/{Settings.CureDosesRequired}; {nextDose}. {fatal}.";
@@ -456,9 +464,10 @@ public partial class SeventhNightSystem : ModSystem
             p.WatchedAttributes.SetDouble(InfectionStartDayKey, Server.World.Calendar.TotalDays);
             p.WatchedAttributes.SetInt(CureDosesKey, 0);
             p.WatchedAttributes.RemoveAttribute(CureLastDoseDayKey);
+            p.WatchedAttributes.RemoveAttribute(CureFirstDoseDayKey);
             p.WatchedAttributes.RemoveAttribute(LegacyPoulticeKey);
             ClearHits(uid);
-            Tell(p, $"The wound burns. Infection is fatal after {Settings.InfectionFatalDays:0.##} in-game days unless cured. Take {Settings.CureDosesRequired} Mycobiotic Cure doses, one every {Settings.CureDoseIntervalDays:0.##} in-game day(s).");
+            Tell(p, $"The wound burns. Take your first Mycobiotic Cure dose within {Settings.CureStartWindowDays:0.##} in-game day(s) or the infection can no longer be stopped; it is fatal after {Settings.InfectionFatalDays:0.##} in-game days. A full course is {Settings.CureDosesRequired} doses, one every {Settings.CureDoseIntervalDays:0.##} in-game day(s).");
         }
         else Tell(p, $"{(alpha ? "Alpha Zombie" : "Zombie")} wound: {recent.Count}/{required} hits within {Settings.HitWindowSeconds:0} seconds.");
     }
@@ -474,12 +483,17 @@ public partial class SeventhNightSystem : ModSystem
         }
         double now = Server.World.Calendar.TotalDays;
         double infectedAt = player.WatchedAttributes.GetDouble(InfectionStartDayKey, now);
-        if (Rules.IsFatalInfection(infectedAt, now, Settings))
+        int doses = player.WatchedAttributes.GetInt(CureDosesKey);
+        if (Rules.IsFatalInfection(infectedAt, now, doses, FirstDoseDay(player, doses, infectedAt), Settings))
         {
             KillFromInfection(player);
             return false;
         }
-        int doses = player.WatchedAttributes.GetInt(CureDosesKey);
+        if (doses <= 0 && !Rules.CanStartCure(infectedAt, now, Settings))
+        {
+            Tell(player, $"Too late: the infection took hold more than {Settings.CureStartWindowDays:0.##} in-game day(s) ago. The Mycobiotic Cure can no longer stop it.");
+            return false;
+        }
         if (doses > 0)
         {
             double last = player.WatchedAttributes.GetDouble(CureLastDoseDayKey, -1);
@@ -502,6 +516,7 @@ public partial class SeventhNightSystem : ModSystem
             player.WatchedAttributes.RemoveAttribute(InfectionStartDayKey);
             player.WatchedAttributes.RemoveAttribute(CureDosesKey);
             player.WatchedAttributes.RemoveAttribute(CureLastDoseDayKey);
+            player.WatchedAttributes.RemoveAttribute(CureFirstDoseDayKey);
             ClearHits(player.Player.PlayerUID);
             Tell(player, "The Mycobiotic Cure has worked. The infection has been eliminated!");
         }
@@ -511,6 +526,7 @@ public partial class SeventhNightSystem : ModSystem
             player.WatchedAttributes.SetDouble(CureLastDoseDayKey, now);
             if (doses == 1)
             {
+                player.WatchedAttributes.SetDouble(CureFirstDoseDayKey, now);
                 // Make the first treatment grant a full longer interval immediately.
                 player.Attributes.SetDouble(InfectionServerClockKey, 0);
                 player.WatchedAttributes.SetDouble(InfectionKey, 0);
@@ -564,6 +580,17 @@ public partial class SeventhNightSystem : ModSystem
             Type = EnumDamageType.Poison,
             IgnoreInvFrames = true
         }, lethalDamage);
+    }
+    // Day of the first accepted dose. Saves from before 2.0.10 have no record:
+    // estimate it from the last dose and the regular interval, clamped so it
+    // never predates infection.
+    double FirstDoseDay(EntityPlayer player, int doses, double infectedAt)
+    {
+        if (doses <= 0) return infectedAt;
+        if (player.WatchedAttributes.HasAttribute(CureFirstDoseDayKey))
+            return player.WatchedAttributes.GetDouble(CureFirstDoseDayKey);
+        double last = player.WatchedAttributes.GetDouble(CureLastDoseDayKey, infectedAt);
+        return Math.Max(infectedAt, last - (doses - 1) * Settings.CureDoseIntervalDays);
     }
     void ClearHits(string uid)
     {
@@ -660,7 +687,9 @@ public partial class SeventhNightSystem : ModSystem
             if (!e.WatchedAttributes.HasAttribute(InfectionStartDayKey))
                 e.WatchedAttributes.SetDouble(InfectionStartDayKey, Server.World.Calendar.TotalDays);
             double infectedAt = e.WatchedAttributes.GetDouble(InfectionStartDayKey);
-            if (Rules.IsFatalInfection(infectedAt, Server.World.Calendar.TotalDays, Settings))
+            int dosesTaken = e.WatchedAttributes.GetInt(CureDosesKey);
+            if (Rules.IsFatalInfection(infectedAt, Server.World.Calendar.TotalDays, dosesTaken,
+                    FirstDoseDay((EntityPlayer)e, dosesTaken, infectedAt), Settings))
             {
                 KillFromInfection((EntityPlayer)e);
                 continue;
@@ -1199,6 +1228,7 @@ public partial class SeventhNightSystem : ModSystem
         p.Entity.WatchedAttributes.RemoveAttribute(LegacyPoulticeKey);
         p.Entity.WatchedAttributes.RemoveAttribute(CureDosesKey);
         p.Entity.WatchedAttributes.RemoveAttribute(CureLastDoseDayKey);
+        p.Entity.WatchedAttributes.RemoveAttribute(CureFirstDoseDayKey);
         p.Entity.WatchedAttributes.RemoveAttribute(QuietBandageKey);
 
         if (!pendingDeathAlphas.TryGetValue(p.PlayerUID, out var pending)) return;
